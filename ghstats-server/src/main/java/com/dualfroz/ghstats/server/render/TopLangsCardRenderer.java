@@ -39,7 +39,7 @@ public class TopLangsCardRenderer implements CardRenderer {
         }
 
         List<Slice> slices = buildSlices(languages);
-        body.append(pie(slices, 108, 138, 66, theme));
+        body.append("<g class=\"pie-grow\">").append(pie(slices, 108, 138, 66, theme)).append("</g>");
         body.append(legend(slices, theme));
 
         return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),

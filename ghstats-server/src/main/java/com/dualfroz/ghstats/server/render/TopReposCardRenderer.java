@@ -50,7 +50,8 @@ public class TopReposCardRenderer implements CardRenderer {
             body.append(Svg.text(25, center + 4, theme.text(), 13, 400, basename(repo.name())));
             body.append("<rect x=\"").append(Svg.trim(BAR_START)).append("\" y=\"").append(center - 7)
                     .append("\" width=\"").append(Svg.trim(barWidth)).append("\" height=\"14\" rx=\"4\" fill=\"")
-                    .append(theme.title()).append("\"/>");
+                    .append(theme.title()).append("\" class=\"grow-right\" style=\"animation-delay:")
+                    .append(Svg.trim(delay)).append("s\"/>");
             body.append(Svg.textAnchored(WIDTH - 25, center + 4, theme.icon(), 12, 700, "end",
                     Format.grouped(repo.ownCommits())));
             body.append("</g>");

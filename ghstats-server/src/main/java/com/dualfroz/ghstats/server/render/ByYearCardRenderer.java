@@ -59,7 +59,8 @@ public class ByYearCardRenderer implements CardRenderer {
             body.append("<g class=\"fadein\" style=\"animation-delay:").append(Svg.trim(delay)).append("s\">");
             body.append("<rect x=\"").append(Svg.trim(barX)).append("\" y=\"").append(Svg.trim(barY))
                     .append("\" width=\"").append(Svg.trim(barWidth)).append("\" height=\"")
-                    .append(Svg.trim(barHeight)).append("\" rx=\"3\" fill=\"").append(theme.title()).append("\"/>");
+                    .append(Svg.trim(barHeight)).append("\" rx=\"3\" fill=\"").append(theme.title())
+                    .append("\" class=\"grow-up\" style=\"animation-delay:").append(Svg.trim(delay)).append("s\"/>");
             body.append(Svg.textAnchored(centerX, barY - 6, theme.text(), 11, 600, "middle",
                     Format.grouped(year.count())));
             body.append(Svg.textAnchored(centerX, plotBottom + 17, theme.muted(), 11, 400, "middle",

@@ -60,14 +60,14 @@ public class LocCardRenderer implements CardRenderer {
         svg.append("<defs><clipPath id=\"ghsWrittenBar\"><rect x=\"").append(x).append("\" y=\"").append(y)
                 .append("\" width=\"").append(barWidth).append("\" height=\"").append(barHeight)
                 .append("\" rx=\"").append(barHeight / 2).append("\"/></clipPath></defs>");
-        svg.append("<g clip-path=\"url(#ghsWrittenBar)\">");
+        svg.append("<g class=\"grow-right\"><g clip-path=\"url(#ghsWrittenBar)\">");
         svg.append("<rect x=\"").append(x).append("\" y=\"").append(y)
                 .append("\" width=\"").append(Svg.trim(addedWidth)).append("\" height=\"").append(barHeight)
                 .append("\" fill=\"").append(ADDED).append("\"/>");
         svg.append("<rect x=\"").append(Svg.trim(x + addedWidth)).append("\" y=\"").append(y)
                 .append("\" width=\"").append(Svg.trim(barWidth - addedWidth)).append("\" height=\"").append(barHeight)
                 .append("\" fill=\"").append(REMOVED).append("\"/>");
-        svg.append("</g>");
+        svg.append("</g></g>");
         return svg.toString();
     }
 }
