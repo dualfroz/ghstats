@@ -74,23 +74,28 @@ All card endpoints return `image/svg+xml`, send `Cache-Control: public,
 max-age=1800` and a weak `ETag`, honour `If-None-Match` (304), and are rate
 limited per client IP (default 60/min, `429` with `Retry-After` on overflow).
 
-| Endpoint      | Card                                                        |
-|---------------|-------------------------------------------------------------|
-| `/stats`      | Overview: own commits, repos, stars, languages, active days, LOC |
-| `/top-langs`  | Pie chart of languages by lines, top 6 + Other, legend with % |
-| `/streak`     | Total contributions, current streak (with dates), longest streak |
-| `/activity`   | Commit activity line/area chart                             |
-| `/heatmap`    | 53x7 contribution heatmap, 5 intensity levels               |
-| `/loc`        | Lines of code total plus a per-language breakdown           |
-| `/healthz`    | JSON `{status, generated_at, age_seconds}` (not rate limited) |
+| Endpoint         | Card                                                     |
+|------------------|----------------------------------------------------------|
+| `/stats`         | Overview: own commits, repos, stars, languages, active days, LOC, lines added/removed |
+| `/top-langs`     | Pie chart of languages by lines, top 12 + Other, two-column legend with % |
+| `/streak`        | Total contributions, current streak (with dates), longest streak |
+| `/activity`      | Commit activity line/area chart (last 52 weeks; `?range=all` = per-year) |
+| `/heatmap`       | 53x7 contribution heatmap (`?range=all` = stacked per-year blocks, full history) |
+| `/loc`           | Lines of code total plus a per-language breakdown        |
+| `/by-year`       | Vertical bars of commits per year (multi-year history)   |
+| `/top-repos`     | Horizontal bars of top repositories by own commits       |
+| `/punchcard`     | When-I-code grid: weekday x hour bubbles                  |
+| `/achievements`  | Badge grid computed from the snapshot                     |
+| `/healthz`       | JSON `{status, generated_at, age_seconds}` (not rate limited) |
 
 Query params:
 
 - `theme=tokyonight` (default) or `theme=light`. Unknown themes fall back to the
   default.
 - `hide_border` (`?hide_border=true`) drops the card outline.
-- `range=all` on `/activity` renders the all-time per-year view; the default
-  (`range=year`) renders the last ~52 weeks.
+- `range=all` on `/activity` and `/heatmap` renders the all-time view (per-year
+  bars / stacked per-year heatmap blocks); the default (`range=year`) renders the
+  last ~52 weeks.
 
 Example URLs:
 
@@ -99,19 +104,40 @@ https://ghapi.dualfroz.com/stats
 https://ghapi.dualfroz.com/top-langs?theme=tokyonight
 https://ghapi.dualfroz.com/streak
 https://ghapi.dualfroz.com/activity?range=all
-https://ghapi.dualfroz.com/heatmap
+https://ghapi.dualfroz.com/heatmap?range=all
+https://ghapi.dualfroz.com/by-year
+https://ghapi.dualfroz.com/top-repos
+https://ghapi.dualfroz.com/punchcard
+https://ghapi.dualfroz.com/achievements
 https://ghapi.dualfroz.com/loc?hide_border=true
 ```
 
 ## Embed in the profile README
 
+`/stats`, `/top-langs`, `/loc` and `/by-year` share the same 495x216 outer size,
+so pair them two-per-row. `/heatmap`, `/punchcard` and `/heatmap?range=all` are
+full width. `/top-repos` and `/achievements` are variable-height, best full width.
+
 ```markdown
-![DualFroz stats](https://ghapi.dualfroz.com/stats)
-![Top languages](https://ghapi.dualfroz.com/top-langs)
+<!-- Two-column row: matched 495x216 cards -->
+<p align="center">
+  <img src="https://ghapi.dualfroz.com/stats" height="180"/>
+  <img src="https://ghapi.dualfroz.com/top-langs" height="180"/>
+</p>
+<p align="center">
+  <img src="https://ghapi.dualfroz.com/loc" height="180"/>
+  <img src="https://ghapi.dualfroz.com/by-year" height="180"/>
+</p>
+
+<!-- Full width -->
 ![Streak](https://ghapi.dualfroz.com/streak)
-![Activity](https://ghapi.dualfroz.com/activity)
 ![Heatmap](https://ghapi.dualfroz.com/heatmap)
-![Lines of code](https://ghapi.dualfroz.com/loc)
+![When I code](https://ghapi.dualfroz.com/punchcard)
+![Top repositories](https://ghapi.dualfroz.com/top-repos)
+![Achievements](https://ghapi.dualfroz.com/achievements)
+
+<!-- The multi-year flex: full history GitHub will not show -->
+![All-time heatmap](https://ghapi.dualfroz.com/heatmap?range=all)
 ```
 
 ## snapshot.json contract
@@ -124,20 +150,26 @@ Written atomically (temp file + rename) by the collector, read by the server.
   "identity": { "login": "dualfroz", "name": "DualFroz" },
   "totals": { "own_commits": 0, "repos_own": 0, "repos_scanned": 0, "stars": 0,
               "languages": 0, "lines_of_code": 0, "active_days": 0,
-              "followers": 0, "public_repos": 0 },
+              "followers": 0, "public_repos": 0,
+              "lines_added": 0, "lines_removed": 0 },
   "streak": { "current": 0, "longest": 0, "current_start": null, "current_end": null },
   "languages_by_lines": [ { "name": "TypeScript", "lines": 0, "share": 0.0, "color": "#3178c6" } ],
   "calendar": [ { "date": "2026-08-25", "count": 0 } ],
+  "calendar_all": [ { "date": "2018-03-04", "count": 0 } ],
   "by_year": [ { "year": "2021", "count": 0 } ],
-  "top_repos": [ { "name": "owner/repo", "own_commits": 0 } ]
+  "top_repos": [ { "name": "owner/repo", "own_commits": 0 } ],
+  "punch_card": [ { "weekday": 1, "hour": 14, "count": 0 } ]
 }
 ```
 
-Totals (`own_commits`, `active_days`, `streak`) are computed from the full git
-history, not just the last year - GitHub hides commits made before an account
-existed and we deliberately show them. `calendar` is the last ~371 days for the
-heatmap and the 52-week activity view; `by_year` is the all-time per-year series
-for `/activity?range=all`.
+Totals (`own_commits`, `active_days`, `streak`, `lines_added`, `lines_removed`)
+are computed from the full git history, not just the last year - GitHub hides
+commits made before an account existed and we deliberately show them. `calendar`
+is the last ~371 days for the heatmap and the 52-week activity view; `calendar_all`
+is every day with at least one commit across the whole history (for
+`/heatmap?range=all`); `by_year` is the all-time per-year series; `punch_card`
+holds weekday (1-7 Mon-Sun) x hour (0-23) commit counts. `lines_added` and
+`lines_removed` come from `git log --numstat` over his commits across all history.
 
 ## What counts as "his" work
 
@@ -154,6 +186,23 @@ for `/activity?range=all`.
   preserve a count for history you later remove from a repo. Keep it at 0 unless
   you specifically need the offset.
 
+## Language filtering
+
+The collector cleans up the raw tokei language set before writing the snapshot,
+so the pie and LOC card show a real language breakdown:
+
+- `language_aliases` merges variants into one language (default `Tsx` ->
+  `TypeScript`, `Jsx` -> `JavaScript`), summing their lines.
+- `language_denylist` drops non-code and data formats (default `JSON`, `JSON5`,
+  `YAML`, `TOML`, `Markdown`, `Plain Text`, `Text`, `SVG`, `XML`, `INI`,
+  `Dotenv`, `CSV`). Programming languages plus `HTML`/`CSS`/`SCSS`/`Sass`/`Less`
+  are kept.
+
+After merge and exclusion, `share` is normalised over the kept languages (sums
+to 100%), `totals.languages` is the kept count, and `totals.lines_of_code` is the
+sum of the kept languages, so the total always matches its own breakdown. The
+server renders top 12 + `Other` from the kept list.
+
 ## Configuration
 
 Collector (`ghstats.collector.*`, defaults in
@@ -166,14 +215,17 @@ Collector (`ghstats.collector.*`, defaults in
 | `authorEmails`            | (the three above)                    | emails that count as his |
 | `fullCountRepos`          | []                                   | count all commits in these repos |
 | `baselineCommits`         | 0                                    | manual offset on own_commits |
+| `languageAliases`         | Tsx->TypeScript, Jsx->JavaScript     | merge language variants |
+| `languageDenylist`        | JSON, YAML, Markdown, ...            | languages dropped from stats |
 | `reposRoot`               | /srv/ghstats/repos                   | where clones live |
 | `snapshotPath`            | /srv/ghstats/data/snapshot.json      | output file |
 | `ghBin` / `gitBin` / `tokeiBin` | gh / git / tokei              | external binaries |
 | `cloneTimeoutSeconds`     | 600                                  | per-repo clone timeout |
-| `gitTimeoutSeconds`       | 120                                  | per-repo pull/log timeout |
+| `gitTimeoutSeconds`       | 120                                  | per-repo pull timeout |
+| `numstatTimeoutSeconds`   | 300                                  | per-repo commit+numstat log timeout |
 | `tokeiTimeoutSeconds`     | 120                                  | per-repo tokei timeout |
 | `calendarDays`            | 371                                  | calendar window length |
-| `topReposCount`           | 6                                    | entries in top_repos |
+| `topReposCount`           | 12                                   | entries in top_repos |
 | `repoListLimit`           | 1000                                 | gh repo list --limit |
 
 Server (`ghstats.server.*`,

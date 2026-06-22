@@ -9,6 +9,8 @@ public record Totals(
         long linesOfCode,
         int activeDays,
         int followers,
-        int publicRepos
+        int publicRepos,
+        long linesAdded,
+        long linesRemoved
 ) {
 }

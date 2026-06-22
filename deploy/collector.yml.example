@@ -16,7 +16,23 @@ ghstats:
     # Manual offset added to totals.own_commits, for history removed later that
     # you still want reflected. Keep at 0 unless you know you need it.
     baselineCommits: 0
+    # Merge tokei language variants into one; drop non-code/data formats.
+    languageAliases:
+      Tsx: TypeScript
+      Jsx: JavaScript
+    languageDenylist:
+      - JSON
+      - YAML
+      - TOML
+      - Markdown
+      - Plain Text
+      - SVG
+      - XML
+      - INI
+      - Dotenv
+      - CSV
     reposRoot: /srv/ghstats/repos
     snapshotPath: /srv/ghstats/data/snapshot.json
+    numstatTimeoutSeconds: 300
     calendarDays: 371
-    topReposCount: 6
+    topReposCount: 12

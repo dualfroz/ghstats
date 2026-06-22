@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 public class TopLangsCardRenderer implements CardRenderer {
 
     private static final int TOP_N = 12;
+    private static final int WIDTH = 495;
+    private static final int HEIGHT = 216;
 
     private record Slice(String name, double share, String color) {
     }
@@ -24,31 +26,29 @@ public class TopLangsCardRenderer implements CardRenderer {
     @Override
     public String render(Snapshot snapshot, RenderOptions options) {
         Theme theme = options.theme();
-        int width = 360;
 
         List<LanguageByLines> languages = snapshot.languagesByLines();
+        StringBuilder body = new StringBuilder();
+        body.append(Svg.title(25, 37, theme, "Most Used Languages"));
+        body.append(divider(theme));
+
         if (languages == null || languages.isEmpty()) {
-            StringBuilder empty = new StringBuilder();
-            empty.append(Svg.title(25, 37, theme, "Most Used Languages"));
-            empty.append(Svg.text(25, 80, theme.muted(), 14, 400, "No language data available."));
-            return Svg.document(width, 110, theme, options.hideBorder(),
-                    "Most used languages - no data", empty.toString());
+            body.append(Svg.text(25, 90, theme.muted(), 14, 400, "No language data available."));
+            return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
+                    "Most used languages - no data", body.toString());
         }
 
         List<Slice> slices = buildSlices(languages);
-        int height = Math.max(230, 70 + slices.size() * 24 + 24);
+        body.append(pie(slices, 108, 138, 66, theme));
+        body.append(legend(slices, theme));
 
-        StringBuilder body = new StringBuilder();
-        body.append(Svg.title(25, 37, theme, "Most Used Languages"));
-
-        double cx = 95;
-        double cy = 130;
-        double radius = 62;
-        body.append(pie(slices, cx, cy, radius, theme));
-        body.append(legend(slices, theme, 185, 70));
-
-        return Svg.document(width, height, theme, options.hideBorder(),
+        return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
                 "Most used languages pie chart", body.toString());
+    }
+
+    private String divider(Theme theme) {
+        return "<line x1=\"25\" y1=\"50\" x2=\"" + (WIDTH - 25) + "\" y2=\"50\" stroke=\""
+                + theme.border() + "\" stroke-width=\"1\"/>";
     }
 
     private List<Slice> buildSlices(List<LanguageByLines> languages) {
@@ -96,21 +96,25 @@ public class TopLangsCardRenderer implements CardRenderer {
         return svg.toString();
     }
 
-    private String legend(List<Slice> slices, Theme theme, int x, int startY) {
+    private String legend(List<Slice> slices, Theme theme) {
         StringBuilder svg = new StringBuilder();
-        int y = startY;
-        int index = 0;
-        for (Slice slice : slices) {
-            double delay = 0.2 + index * 0.07;
+        int perColumn = (slices.size() + 1) / 2;
+        int startY = 74;
+        int rowHeight = 20;
+        for (int i = 0; i < slices.size(); i++) {
+            Slice slice = slices.get(i);
+            boolean firstColumn = i < perColumn;
+            int columnX = firstColumn ? 200 : 350;
+            int rowInColumn = firstColumn ? i : i - perColumn;
+            int y = startY + rowInColumn * rowHeight;
+            double delay = 0.2 + i * 0.05;
             svg.append("<g class=\"fadein\" style=\"animation-delay:").append(Svg.trim(delay)).append("s\">");
-            svg.append("<rect x=\"").append(x).append("\" y=\"").append(y - 10)
+            svg.append("<rect x=\"").append(columnX).append("\" y=\"").append(y - 11)
                     .append("\" width=\"12\" height=\"12\" rx=\"3\" fill=\"").append(slice.color()).append("\"/>");
-            svg.append(Svg.text(x + 20, y, theme.text(), 13, 400, slice.name()));
-            svg.append(Svg.textAnchored(x + 155, y, theme.muted(), 13, 600, "end",
+            svg.append(Svg.text(columnX + 18, y, theme.text(), 13, 400, slice.name()));
+            svg.append(Svg.textAnchored(columnX + 128, y, theme.muted(), 13, 600, "end",
                     Format.percent(slice.share())));
             svg.append("</g>");
-            y += 24;
-            index++;
         }
         return svg.toString();
     }

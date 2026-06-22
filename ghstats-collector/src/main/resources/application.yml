@@ -27,6 +27,22 @@ ghstats:
     fullCountRepos:
       - secret
     baselineCommits: 0
+    languageDenylist:
+      - JSON
+      - JSON5
+      - YAML
+      - TOML
+      - Markdown
+      - Plain Text
+      - Text
+      - SVG
+      - XML
+      - INI
+      - Dotenv
+      - CSV
+    languageAliases:
+      Tsx: TypeScript
+      Jsx: JavaScript
     reposRoot: /srv/ghstats/repos
     snapshotPath: /srv/ghstats/data/snapshot.json
     ghBin: gh
@@ -34,6 +50,7 @@ ghstats:
     tokeiBin: tokei
     cloneTimeoutSeconds: 600
     gitTimeoutSeconds: 120
+    numstatTimeoutSeconds: 300
     tokeiTimeoutSeconds: 120
     enumerationTimeoutSeconds: 120
     calendarDays: 371

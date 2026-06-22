@@ -11,8 +11,10 @@ public record Snapshot(
         Streak streak,
         List<LanguageByLines> languagesByLines,
         List<CalendarDay> calendar,
+        List<CalendarDay> calendarAll,
         List<YearCount> byYear,
-        List<TopRepo> topRepos
+        List<TopRepo> topRepos,
+        List<PunchCell> punchCard
 ) {
     @JsonIgnore
     public boolean isEmpty() {

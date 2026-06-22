@@ -17,6 +17,24 @@ public final class Format {
         return NumberFormat.getIntegerInstance(Locale.US).format(value);
     }
 
+    public static String compact(long value) {
+        if (value < 1000) {
+            return String.valueOf(value);
+        }
+        if (value < 1_000_000) {
+            return trimDecimal(value / 1000.0) + "k";
+        }
+        if (value < 1_000_000_000L) {
+            return trimDecimal(value / 1_000_000.0) + "M";
+        }
+        return trimDecimal(value / 1_000_000_000.0) + "B";
+    }
+
+    private static String trimDecimal(double value) {
+        String formatted = String.format(Locale.US, "%.1f", value);
+        return formatted.endsWith(".0") ? formatted.substring(0, formatted.length() - 2) : formatted;
+    }
+
     public static String percent(double share) {
         return String.format(Locale.US, "%.1f%%", share * 100.0);
     }

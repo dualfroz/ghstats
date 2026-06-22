@@ -1,6 +1,7 @@
 package com.dualfroz.ghstats.collector;
 
 import java.util.List;
+import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "ghstats.collector")
@@ -14,6 +15,14 @@ public class CollectorProperties {
     );
     private List<String> fullCountRepos = List.of();
     private int baselineCommits = 0;
+    private List<String> languageDenylist = List.of(
+            "JSON", "JSON5", "YAML", "TOML", "Markdown", "Plain Text", "Text",
+            "SVG", "XML", "INI", "Dotenv", "CSV"
+    );
+    private Map<String, String> languageAliases = Map.of(
+            "Tsx", "TypeScript",
+            "Jsx", "JavaScript"
+    );
     private String reposRoot = "/srv/ghstats/repos";
     private String snapshotPath = "/srv/ghstats/data/snapshot.json";
     private String ghBin = "gh";
@@ -21,6 +30,7 @@ public class CollectorProperties {
     private String tokeiBin = "tokei";
     private int cloneTimeoutSeconds = 600;
     private int gitTimeoutSeconds = 120;
+    private int numstatTimeoutSeconds = 300;
     private int tokeiTimeoutSeconds = 120;
     private int enumerationTimeoutSeconds = 120;
     private int calendarDays = 371;
@@ -59,6 +69,22 @@ public class CollectorProperties {
 
     public void setBaselineCommits(int baselineCommits) {
         this.baselineCommits = baselineCommits;
+    }
+
+    public List<String> getLanguageDenylist() {
+        return languageDenylist;
+    }
+
+    public void setLanguageDenylist(List<String> languageDenylist) {
+        this.languageDenylist = languageDenylist;
+    }
+
+    public Map<String, String> getLanguageAliases() {
+        return languageAliases;
+    }
+
+    public void setLanguageAliases(Map<String, String> languageAliases) {
+        this.languageAliases = languageAliases;
     }
 
     public String getReposRoot() {
@@ -115,6 +141,14 @@ public class CollectorProperties {
 
     public void setGitTimeoutSeconds(int gitTimeoutSeconds) {
         this.gitTimeoutSeconds = gitTimeoutSeconds;
+    }
+
+    public int getNumstatTimeoutSeconds() {
+        return numstatTimeoutSeconds;
+    }
+
+    public void setNumstatTimeoutSeconds(int numstatTimeoutSeconds) {
+        this.numstatTimeoutSeconds = numstatTimeoutSeconds;
     }
 
     public int getTokeiTimeoutSeconds() {

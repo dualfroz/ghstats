@@ -64,8 +64,11 @@ public class CardController {
     @GetMapping("/heatmap")
     public ResponseEntity<String> heatmap(@RequestParam(required = false) String theme,
                                           @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                          @RequestParam(required = false) String range,
                                           @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        return respond("heatmap", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+        String resolvedRange = RenderOptions.RANGE_ALL.equalsIgnoreCase(range)
+                ? RenderOptions.RANGE_ALL : RenderOptions.RANGE_YEAR;
+        return respond("heatmap", theme, hideBorder, resolvedRange, ifNoneMatch);
     }
 
     @GetMapping("/loc")
@@ -73,6 +76,34 @@ public class CardController {
                                       @RequestParam(name = "hide_border", required = false) String hideBorder,
                                       @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
         return respond("loc", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+    }
+
+    @GetMapping("/by-year")
+    public ResponseEntity<String> byYear(@RequestParam(required = false) String theme,
+                                         @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                         @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
+        return respond("by-year", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+    }
+
+    @GetMapping("/top-repos")
+    public ResponseEntity<String> topRepos(@RequestParam(required = false) String theme,
+                                           @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                           @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
+        return respond("top-repos", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+    }
+
+    @GetMapping("/punchcard")
+    public ResponseEntity<String> punchcard(@RequestParam(required = false) String theme,
+                                            @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                            @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
+        return respond("punchcard", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+    }
+
+    @GetMapping("/achievements")
+    public ResponseEntity<String> achievements(@RequestParam(required = false) String theme,
+                                                @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                                @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
+        return respond("achievements", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
     }
 
     private ResponseEntity<String> respond(String cardKey, String themeParam, String hideBorderParam,

@@ -34,7 +34,7 @@ public class StatsCardRenderer implements CardRenderer {
                 new Row("Total stars earned", Format.grouped(totals.stars())),
                 new Row("Languages used", Format.grouped(totals.languages())),
                 new Row("Active days", Format.grouped(totals.activeDays())),
-                new Row("Lines of code", Format.grouped(totals.linesOfCode()))
+                new Row("Lines written", Format.grouped(totals.linesAdded() - totals.linesRemoved()))
         );
 
         StringBuilder body = new StringBuilder();
@@ -42,22 +42,38 @@ public class StatsCardRenderer implements CardRenderer {
         body.append("<line x1=\"25\" y1=\"50\" x2=\"").append(width - 25)
                 .append("\" y2=\"50\" stroke=\"").append(theme.border()).append("\" stroke-width=\"1\"/>");
 
-        int y = 82;
-        int step = 25;
-        int index = 0;
-        for (Row row : rows) {
-            double delay = 0.15 + index * 0.08;
+        int startY = 78;
+        int step = 21;
+        for (int index = 0; index < rows.size(); index++) {
+            Row row = rows.get(index);
+            int y = startY + index * step;
+            double delay = 0.15 + index * 0.07;
             body.append("<g class=\"fadein\" style=\"animation-delay:").append(Svg.trim(delay)).append("s\">");
             body.append("<circle cx=\"33\" cy=\"").append(y - 4).append("\" r=\"3.5\" fill=\"")
                     .append(theme.icon()).append("\"/>");
             body.append(Svg.text(48, y, theme.text(), 14, 400, row.label()));
             body.append(Svg.textAnchored(width - 25, y, theme.title(), 14, 700, "end", row.value()));
             body.append("</g>");
-            y += step;
-            index++;
         }
+        body.append(diffRow(theme, width, startY + rows.size() * step, totals.linesAdded(), totals.linesRemoved()));
 
         return Svg.document(width, height, theme, options.hideBorder(),
                 name + " GitHub stats overview", body.toString());
+    }
+
+    private String diffRow(Theme theme, int width, int y, long added, long removed) {
+        StringBuilder svg = new StringBuilder();
+        svg.append("<g class=\"fadein\" style=\"animation-delay:0.57s\">");
+        svg.append("<circle cx=\"33\" cy=\"").append(y - 4).append("\" r=\"3.5\" fill=\"")
+                .append(theme.icon()).append("\"/>");
+        svg.append(Svg.text(48, y, theme.text(), 14, 400, "Lines added / removed"));
+        svg.append("<text x=\"").append(width - 25).append("\" y=\"").append(y)
+                .append("\" text-anchor=\"end\" font-size=\"14\" font-weight=\"700\">")
+                .append("<tspan fill=\"#3fb950\">+").append(Svg.escape(Format.grouped(added))).append("</tspan>")
+                .append("<tspan fill=\"").append(theme.muted()).append("\"> / </tspan>")
+                .append("<tspan fill=\"#f85149\">-").append(Svg.escape(Format.grouped(removed))).append("</tspan>")
+                .append("</text>");
+        svg.append("</g>");
+        return svg.toString();
     }
 }
