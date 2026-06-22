@@ -15,9 +15,11 @@ public class ServerProperties {
     private String lanyardUserId = "000000000000000000";
     private int lanyardPollSeconds = 30;
     private int discordCacheMaxAgeSeconds = 25;
-    private String discordBio = "";
-    private String discordPronouns = "";
-    private String discordBanner = "";
+    private String discordBio = "Building things I don't know how to build yet.";
+    private String discordPronouns = "Strange(r)";
+    private String discordBanner =
+            "https://cdn.discordapp.com/banners/000000000000000000/06aacf47ba5d24b864e014407ee28661.png?size=480";
+    private List<String> discordBadges = List.of("nitro", "boost", "quest", "orb", "legacy");
 
     public String getSnapshotPath() {
         return snapshotPath;
@@ -113,5 +115,13 @@ public class ServerProperties {
 
     public void setDiscordBanner(String discordBanner) {
         this.discordBanner = discordBanner;
+    }
+
+    public List<String> getDiscordBadges() {
+        return discordBadges;
+    }
+
+    public void setDiscordBadges(List<String> discordBadges) {
+        this.discordBadges = discordBadges;
     }
 }

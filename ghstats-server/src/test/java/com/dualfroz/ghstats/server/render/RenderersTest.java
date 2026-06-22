@@ -140,6 +140,11 @@ class RenderersTest {
         assertTrue(svg.contains("<image href=\"data:"));
         assertTrue(svg.contains("<animate"));
         assertTrue(svg.contains("#23a55a"));
+        assertTrue(svg.contains("url(#bgNitro)"));
+        assertTrue(svg.contains("url(#bgBoost)"));
+        assertTrue(svg.contains("url(#bgQuest)"));
+        assertTrue(svg.contains("url(#bgOrb)"));
+        assertTrue(svg.contains("url(#bgLegacy)"));
         assertFalse(svg.contains("Error"));
     }
 
