@@ -12,6 +12,7 @@ import com.dualfroz.ghstats.common.model.Streak;
 import com.dualfroz.ghstats.common.model.Totals;
 import com.dualfroz.ghstats.common.model.TopRepo;
 import com.dualfroz.ghstats.common.model.YearCount;
+import com.dualfroz.ghstats.server.ServerProperties;
 import com.dualfroz.ghstats.server.discord.DiscordCardRenderer;
 import com.dualfroz.ghstats.server.discord.LanyardState;
 import com.dualfroz.ghstats.server.theme.Themes;
@@ -30,7 +31,7 @@ class RenderersTest {
         List<CalendarDay> calendar = new ArrayList<>();
         LocalDate today = LocalDate.of(2026, 8, 25);
         for (int i = 370; i >= 0; i--) {
-            calendar.add(new CalendarDay(today.minusDays(i), i % 5));
+            calendar.add(new CalendarDay(today.minusDays(i), (i * 3) % 61));
         }
         List<CalendarDay> calendarAll = new ArrayList<>();
         for (int year = 2021; year <= 2026; year++) {
@@ -95,41 +96,69 @@ class RenderersTest {
     }
 
     @Test
-    void heatmapYearRendersGreenCells() {
-        String svg = new HeatmapCardRenderer().render(sample(), options);
+    void heatmapYearRendersGreenCellsWithTotal() {
+        String svg = new HeatmapCardRenderer(new ServerProperties()).render(sample(), options);
         assertTrue(svg.contains("Contribution Heatmap"));
-        assertTrue(svg.contains("<rect"));
+        assertTrue(svg.contains("commits in the last year"));
         assertTrue(svg.contains("#39d353"));
+        assertTrue(svg.contains("#57ff70"));
         assertTrue(svg.contains("Less"));
         assertTrue(svg.contains("More"));
     }
 
     @Test
-    void discordBadgeRendersPresentStatus() {
-        LanyardState state = new LanyardState(true, false, "online", "DualFroz",
-                "Playing Minecraft", Instant.now());
-        String svg = new DiscordCardRenderer().render(state, options.theme(), false);
-        assertTrue(svg.contains("DualFroz"));
-        assertTrue(svg.contains("Online"));
-        assertTrue(svg.contains("Playing Minecraft"));
-        assertTrue(svg.contains("#43b581"));
+    void entryAnimationsPresent() {
+        assertTrue(new TopLangsCardRenderer().render(sample(), options).contains("class=\"pie-grow\""));
+        assertTrue(new ByYearCardRenderer().render(sample(), options).contains("class=\"grow-up\""));
+        assertTrue(new TopReposCardRenderer().render(sample(), options).contains("class=\"grow-right\""));
+        String loc = new LocCardRenderer().render(sample(), options);
+        assertTrue(loc.contains("class=\"grow-right\""));
+        assertTrue(loc.contains("@keyframes ghsGrowRight"));
+        assertTrue(loc.contains("transform-origin"));
+    }
+
+    @Test
+    void discordSpotifyProfileRenders() {
+        long now = System.currentTimeMillis();
+        LanyardState.Spotify spotify = new LanyardState.Spotify("Midnight City", "M83",
+                "Hurry Up, We're Dreaming", "data:image/jpeg;base64,QUJD", now - 60000, now + 120000);
+        LanyardState state = new LanyardState(true, false, "online", "[LOA] DualFroz", "dualfroz",
+                "VUL", null, "data:image/png;base64,QUJD", null, spotify, null, null, Instant.now());
+        ServerProperties props = new ServerProperties();
+        props.setDiscordBio("Backend and infra. Building ghstats and Spectra.");
+        props.setDiscordPronouns("he/him");
+
+        String svg = new DiscordCardRenderer(props).render(state, false);
+        assertTrue(svg.startsWith("<svg"));
+        assertTrue(svg.contains("[LOA] DualFroz"));
+        assertTrue(svg.contains("@dualfroz"));
+        assertTrue(svg.contains("VUL"));
+        assertTrue(svg.contains("ABOUT ME"));
+        assertTrue(svg.contains("he/him"));
+        assertTrue(svg.contains("Listening to Spotify"));
+        assertTrue(svg.contains("Midnight City"));
+        assertTrue(svg.contains("<image href=\"data:"));
+        assertTrue(svg.contains("<animate"));
+        assertTrue(svg.contains("#23a55a"));
         assertFalse(svg.contains("Error"));
     }
 
     @Test
-    void discordBadgeNeutralWhenAbsent() {
-        String svg = new DiscordCardRenderer().render(LanyardState.absent(), options.theme(), false);
+    void discordNeutralWhenAbsent() {
+        String svg = new DiscordCardRenderer(new ServerProperties()).render(LanyardState.absent(), false);
         assertTrue(svg.contains("DualFroz"));
+        assertTrue(svg.contains("@dualfroz"));
         assertTrue(svg.contains("Discord"));
         assertFalse(svg.contains("Error"));
     }
 
     @Test
-    void heatmapAllTimeRendersYearBlocks() {
+    void heatmapAllTimeRendersYearBlocksWithTotal() {
         RenderOptions allTime =
                 new RenderOptions(Themes.resolve("tokyonight"), false, RenderOptions.RANGE_ALL);
-        String svg = new HeatmapCardRenderer().render(sample(), allTime);
+        String svg = new HeatmapCardRenderer(new ServerProperties()).render(sample(), allTime);
         assertTrue(svg.contains("all time"));
+        assertTrue(svg.contains("commits all-time"));
         assertTrue(svg.contains(">2021</text>"));
         assertTrue(svg.contains(">2026</text>"));
         assertTrue(svg.contains("<rect"));

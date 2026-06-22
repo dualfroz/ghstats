@@ -118,11 +118,10 @@ public class CardController {
     public ResponseEntity<String> discord(@RequestParam(required = false) String theme,
                                           @RequestParam(name = "hide_border", required = false) String hideBorder,
                                           @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        Theme resolved = resolveTheme(theme);
         boolean hideBorderFlag = isTrue(hideBorder);
         LanyardState lanyardState = lanyard.state();
         String etag = "W/\"discord-" + Integer.toHexString(
-                (lanyardState.token() + resolved.name() + hideBorderFlag).hashCode()) + "\"";
+                (lanyardState.token() + hideBorderFlag).hashCode()) + "\"";
 
         CacheControl cacheControl = CacheControl
                 .maxAge(Duration.ofSeconds(properties.getDiscordCacheMaxAgeSeconds()))
@@ -131,7 +130,7 @@ public class CardController {
         if (etag.equals(ifNoneMatch)) {
             return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cacheControl).build();
         }
-        String svg = discordRenderer.render(lanyardState, resolved, hideBorderFlag);
+        String svg = discordRenderer.render(lanyardState, hideBorderFlag);
         return ResponseEntity.ok()
                 .contentType(SVG)
                 .eTag(etag)

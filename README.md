@@ -86,13 +86,20 @@ limited per client IP (default 60/min, `429` with `Retry-After` on overflow).
 | `/top-repos`     | Horizontal bars of top repositories by own commits       |
 | `/punchcard`     | When-I-code grid: weekday x hour bubbles (size + opacity by intensity) |
 | `/achievements`  | Badge grid computed from the snapshot                     |
-| `/discord`       | Live Discord presence badge via Lanyard (status dot, name, activity) |
+| `/discord`       | Full Discord profile card via Lanyard (banner, avatar, status, tag, About Me, Spotify/activity) |
 | `/healthz`       | JSON `{status, generated_at, age_seconds}` (not rate limited) |
 
-The heatmap uses a GitHub-style green intensity scale. `/discord` is live: the
-server polls Lanyard on a timer and serves a short-cached badge; if Lanyard is
-unreachable it keeps the last value (or a neutral `DualFroz / Discord` badge),
-never an error card.
+The heatmap uses a GitHub-style green scale with 5 intensity levels on fixed
+per-day commit thresholds (`heatmapThresholds`, default `[3, 10, 25, 50]`: 1-3,
+4-10, 11-25, 26-50, 51+) and shows the total commit count on the card. `/discord`
+is live: the server polls Lanyard on a timer and serves a short-cached badge; if
+Lanyard is unreachable it keeps the last value (or a neutral `DualFroz / Discord`
+badge), never an error card.
+
+`/top-langs` (pie), `/by-year` and `/top-repos` (bars) and the `/loc` bar have a
+one-shot entrance animation on load (declarative CSS `@keyframes` inside the SVG).
+`/discord`, `/stats`, `/streak`, `/achievements`, `/punchcard` and `/heatmap`
+stay static.
 
 Query params:
 
@@ -247,12 +254,22 @@ Server (`ghstats.server.*`,
 | `rateLimitPerMinute`   | 60                               | per-IP request budget |
 | `cacheMaxAgeSeconds`   | 1800                             | Cache-Control max-age |
 | `defaultTheme`         | tokyonight                       | theme when none is given |
+| `heatmapThresholds`    | [3, 10, 25, 50]                  | per-day commit upper bounds for the 5 heatmap levels |
 | `lanyardUserId`        | 000000000000000000               | Discord user id polled from Lanyard |
-| `lanyardPollSeconds`   | 60                               | Lanyard poll interval |
-| `discordCacheMaxAgeSeconds` | 60                          | Cache-Control max-age for `/discord` |
+| `lanyardPollSeconds`   | 30                               | Lanyard poll interval |
+| `discordCacheMaxAgeSeconds` | 25                          | Cache-Control max-age for `/discord` |
+| `discordBio`           | (empty)                          | About Me text; empty hides the section |
+| `discordPronouns`      | (empty)                          | pronouns shown next to `@username`; empty hides |
+| `discordBanner`        | (empty)                          | banner: empty = blurple gradient, `#hex` = solid, `a,b` = gradient, `https://...` = image |
 
-The `/discord` badge needs outbound HTTPS to `api.lanyard.rest` from the server
-container. Everything else stays offline against the snapshot.
+`/discord` renders a full Discord profile card (banner, avatar with status dot,
+display name + guild tag, About Me, and a live activity section - Spotify with
+album art and a progress bar, or the current game/status). Lanyard has no bio,
+pronouns or banner, so those come from config. The server polls Lanyard, fetches
+each image (avatar, album art, guild badge, banner) and inlines it as a
+`data:` URI, because GitHub's `<img>` secure mode will not load external images
+from an SVG. It needs outbound HTTPS to `api.lanyard.rest`, `cdn.discordapp.com`
+and the Spotify CDN. Everything else stays offline against the snapshot.
 
 Environment variables use the Spring relaxed-binding form, e.g.
 `GHSTATS_SERVER_RATELIMITPERMINUTE=120` (see `docker-compose.yml`).
