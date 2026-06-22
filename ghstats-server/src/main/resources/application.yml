@@ -1,0 +1,26 @@
+server:
+  port: 14330
+  compression:
+    enabled: true
+    mime-types: image/svg+xml,application/json,text/plain
+    min-response-size: 512
+  shutdown: graceful
+
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: ghstats-server
+
+logging:
+  level:
+    root: INFO
+    com.dualfroz.ghstats: INFO
+
+ghstats:
+  server:
+    snapshotPath: /srv/ghstats/data/snapshot.json
+    pollIntervalSeconds: 30
+    rateLimitPerMinute: 60
+    cacheMaxAgeSeconds: 1800
+    defaultTheme: tokyonight
