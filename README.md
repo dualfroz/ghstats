@@ -81,12 +81,18 @@ limited per client IP (default 60/min, `429` with `Retry-After` on overflow).
 | `/streak`        | Total contributions, current streak (with dates), longest streak |
 | `/activity`      | Commit activity line/area chart (last 52 weeks; `?range=all` = per-year) |
 | `/heatmap`       | 53x7 contribution heatmap (`?range=all` = stacked per-year blocks, full history) |
-| `/loc`           | Lines of code total plus a per-language breakdown        |
+| `/loc`           | Lines Written: net (added - removed) with an added/removed bar |
 | `/by-year`       | Vertical bars of commits per year (multi-year history)   |
 | `/top-repos`     | Horizontal bars of top repositories by own commits       |
-| `/punchcard`     | When-I-code grid: weekday x hour bubbles                  |
+| `/punchcard`     | When-I-code grid: weekday x hour bubbles (size + opacity by intensity) |
 | `/achievements`  | Badge grid computed from the snapshot                     |
+| `/discord`       | Live Discord presence badge via Lanyard (status dot, name, activity) |
 | `/healthz`       | JSON `{status, generated_at, age_seconds}` (not rate limited) |
+
+The heatmap uses a GitHub-style green intensity scale. `/discord` is live: the
+server polls Lanyard on a timer and serves a short-cached badge; if Lanyard is
+unreachable it keeps the last value (or a neutral `DualFroz / Discord` badge),
+never an error card.
 
 Query params:
 
@@ -138,6 +144,9 @@ full width. `/top-repos` and `/achievements` are variable-height, best full widt
 
 <!-- The multi-year flex: full history GitHub will not show -->
 ![All-time heatmap](https://ghapi.dualfroz.com/heatmap?range=all)
+
+<!-- Reach Me: live Discord presence -->
+![Discord](https://ghapi.dualfroz.com/discord)
 ```
 
 ## snapshot.json contract
@@ -238,6 +247,12 @@ Server (`ghstats.server.*`,
 | `rateLimitPerMinute`   | 60                               | per-IP request budget |
 | `cacheMaxAgeSeconds`   | 1800                             | Cache-Control max-age |
 | `defaultTheme`         | tokyonight                       | theme when none is given |
+| `lanyardUserId`        | 000000000000000000               | Discord user id polled from Lanyard |
+| `lanyardPollSeconds`   | 60                               | Lanyard poll interval |
+| `discordCacheMaxAgeSeconds` | 60                          | Cache-Control max-age for `/discord` |
+
+The `/discord` badge needs outbound HTTPS to `api.lanyard.rest` from the server
+container. Everything else stays offline against the snapshot.
 
 Environment variables use the Spring relaxed-binding form, e.g.
 `GHSTATS_SERVER_RATELIMITPERMINUTE=120` (see `docker-compose.yml`).

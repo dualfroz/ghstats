@@ -1,5 +1,6 @@
 package com.dualfroz.ghstats.server.render;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.dualfroz.ghstats.common.model.CalendarDay;
@@ -11,6 +12,8 @@ import com.dualfroz.ghstats.common.model.Streak;
 import com.dualfroz.ghstats.common.model.Totals;
 import com.dualfroz.ghstats.common.model.TopRepo;
 import com.dualfroz.ghstats.common.model.YearCount;
+import com.dualfroz.ghstats.server.discord.DiscordCardRenderer;
+import com.dualfroz.ghstats.server.discord.LanyardState;
 import com.dualfroz.ghstats.server.theme.Themes;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -65,7 +68,8 @@ class RenderersTest {
         assertTrue(svg.contains("width=\"495\" height=\"216\""));
         assertTrue(svg.contains("DualFroz&#39;s GitHub Stats"));
         assertTrue(svg.contains("12,345"));
-        assertTrue(svg.contains("987,654"));
+        assertTrue(svg.contains("Lines written"));
+        assertTrue(svg.contains("1,000,000"));
         assertTrue(svg.contains("+1,234,567"));
         assertTrue(svg.contains("-234,567"));
     }
@@ -81,21 +85,43 @@ class RenderersTest {
     }
 
     @Test
-    void locCardMatchesStatsSize() {
+    void locCardShowsLinesWritten() {
         String svg = new LocCardRenderer().render(sample(), options);
         assertTrue(svg.contains("width=\"495\" height=\"216\""));
-        assertTrue(svg.contains("Lines of Code"));
-        assertTrue(svg.contains("987,654"));
-        assertTrue(svg.contains("TypeScript"));
+        assertTrue(svg.contains("Lines Written"));
+        assertTrue(svg.contains("1,000,000"));
+        assertTrue(svg.contains("+1,234,567 added"));
+        assertTrue(svg.contains("-234,567 removed"));
     }
 
     @Test
-    void heatmapYearRendersCells() {
+    void heatmapYearRendersGreenCells() {
         String svg = new HeatmapCardRenderer().render(sample(), options);
         assertTrue(svg.contains("Contribution Heatmap"));
         assertTrue(svg.contains("<rect"));
+        assertTrue(svg.contains("#39d353"));
         assertTrue(svg.contains("Less"));
         assertTrue(svg.contains("More"));
+    }
+
+    @Test
+    void discordBadgeRendersPresentStatus() {
+        LanyardState state = new LanyardState(true, false, "online", "DualFroz",
+                "Playing Minecraft", Instant.now());
+        String svg = new DiscordCardRenderer().render(state, options.theme(), false);
+        assertTrue(svg.contains("DualFroz"));
+        assertTrue(svg.contains("Online"));
+        assertTrue(svg.contains("Playing Minecraft"));
+        assertTrue(svg.contains("#43b581"));
+        assertFalse(svg.contains("Error"));
+    }
+
+    @Test
+    void discordBadgeNeutralWhenAbsent() {
+        String svg = new DiscordCardRenderer().render(LanyardState.absent(), options.theme(), false);
+        assertTrue(svg.contains("DualFroz"));
+        assertTrue(svg.contains("Discord"));
+        assertFalse(svg.contains("Error"));
     }
 
     @Test

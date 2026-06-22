@@ -2,11 +2,10 @@ package com.dualfroz.ghstats.server.render;
 
 import com.dualfroz.ghstats.common.model.CalendarDay;
 import com.dualfroz.ghstats.common.model.Snapshot;
+import com.dualfroz.ghstats.server.ServerProperties;
 import com.dualfroz.ghstats.server.theme.Theme;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +27,12 @@ public class HeatmapCardRenderer implements CardRenderer {
     private static final int ALL_PITCH = 12;
     private static final int ALL_GRID_LEFT = 48;
 
+    private final ServerProperties properties;
+
+    public HeatmapCardRenderer(ServerProperties properties) {
+        this.properties = properties;
+    }
+
     @Override
     public String key() {
         return "heatmap";
@@ -39,30 +44,34 @@ public class HeatmapCardRenderer implements CardRenderer {
             return renderAllTime(snapshot, options);
         }
         Theme theme = options.theme();
-        int width = 740;
         int height = 190;
 
-        Map<LocalDate, Integer> counts = index(snapshot.calendar());
-        LocalDate today = lastDate(snapshot.calendar());
+        List<CalendarDay> calendar = snapshot.calendar();
+        Map<LocalDate, Integer> counts = index(calendar);
+        LocalDate today = lastDate(calendar);
 
         StringBuilder body = new StringBuilder();
         body.append(Svg.title(25, 37, theme, "Contribution Heatmap (52 weeks)"));
 
         if (today == null) {
             body.append(Svg.text(25, 90, theme.muted(), 14, 400, "No contribution data available."));
-            return Svg.document(width, 120, theme, options.hideBorder(),
+            return Svg.document(WIDTH, 120, theme, options.hideBorder(),
                     "Contribution heatmap - no data", body.toString());
         }
 
+        long total = counts.values().stream().mapToLong(Integer::longValue).sum();
+        body.append(Svg.textAnchored(WIDTH - 25, 37, theme.text(), 13, 600, "end",
+                Format.grouped(total) + " commits in the last year"));
+
         LocalDate topLeft = today.minusDays(today.getDayOfWeek().getValue() % 7).minusWeeks(COLUMNS - 1L);
-        int[] thresholds = quartiles(counts, topLeft, today);
+        int[] thresholds = thresholds();
 
         body.append(monthLabels(topLeft, today, theme));
         body.append(weekdayLabels(theme));
         body.append(cells(counts, topLeft, today, theme, thresholds));
-        body.append(legend(theme, width));
+        body.append(legend(theme, GRID_TOP + ROWS * PITCH + 14, CELL));
 
-        return Svg.document(width, height, theme, options.hideBorder(),
+        return Svg.document(WIDTH, height, theme, options.hideBorder(),
                 "Contribution heatmap", body.toString());
     }
 
@@ -82,13 +91,16 @@ public class HeatmapCardRenderer implements CardRenderer {
                     "Contribution heatmap all time - no data", body.toString());
         }
 
+        long total = counts.values().stream().mapToLong(Integer::longValue).sum();
+        body.append(Svg.textAnchored(WIDTH - 25, 37, theme.text(), 13, 600, "end",
+                Format.grouped(total) + " commits all-time"));
+
         int minYear = counts.keySet().stream().mapToInt(LocalDate::getYear).min().orElse(0);
         LocalDate maxDate = counts.keySet().stream().max(LocalDate::compareTo).orElseThrow();
         int maxYear = maxDate.getYear();
-        int[] thresholds = quartilesAll(counts.values());
+        int[] thresholds = thresholds();
 
-        int blockGridHeight = ROWS * ALL_PITCH;
-        int blockHeight = blockGridHeight + 22;
+        int blockHeight = ROWS * ALL_PITCH + 22;
         int firstTop = 58;
         int yearCount = maxYear - minYear + 1;
         int height = firstTop + yearCount * blockHeight + 28;
@@ -97,7 +109,7 @@ public class HeatmapCardRenderer implements CardRenderer {
             int year = minYear + i;
             body.append(yearBlock(year, counts, maxDate, thresholds, firstTop + i * blockHeight, theme));
         }
-        body.append(allTimeLegend(theme, firstTop + yearCount * blockHeight + 6));
+        body.append(legend(theme, firstTop + yearCount * blockHeight + 6, ALL_CELL));
 
         return Svg.document(WIDTH, height, theme, options.hideBorder(),
                 "Contribution heatmap all time", body.toString());
@@ -130,35 +142,25 @@ public class HeatmapCardRenderer implements CardRenderer {
         return svg.toString();
     }
 
-    private int[] quartilesAll(java.util.Collection<Integer> values) {
-        List<Integer> positive = new ArrayList<>();
-        for (int value : values) {
-            if (value > 0) {
-                positive.add(value);
-            }
+    private int[] thresholds() {
+        List<Integer> configured = properties.getHeatmapThresholds();
+        int[] thresholds = new int[configured.size()];
+        for (int i = 0; i < thresholds.length; i++) {
+            thresholds[i] = configured.get(i);
         }
-        if (positive.isEmpty()) {
-            return new int[]{1, 2, 3};
-        }
-        Collections.sort(positive);
-        return new int[]{
-                positive.get(positive.size() / 4),
-                positive.get(positive.size() / 2),
-                positive.get(positive.size() * 3 / 4)
-        };
+        return thresholds;
     }
 
-    private String allTimeLegend(Theme theme, int y) {
-        StringBuilder svg = new StringBuilder();
-        int x = WIDTH - 200;
-        svg.append(Svg.textAnchored(x - 6, y + 9, theme.muted(), 11, 400, "end", "Less"));
-        for (int lvl = 0; lvl < 5; lvl++) {
-            svg.append("<rect x=\"").append(x + lvl * 15).append("\" y=\"").append(y)
-                    .append("\" width=\"").append(ALL_CELL).append("\" height=\"").append(ALL_CELL)
-                    .append("\" rx=\"2\" fill=\"").append(theme.heatLevels().get(lvl)).append("\"/>");
+    private int level(int count, int[] thresholds) {
+        if (count <= 0) {
+            return 0;
         }
-        svg.append(Svg.text(x + 5 * 15 + 4, y + 9, theme.muted(), 11, 400, "More"));
-        return svg.toString();
+        for (int i = 0; i < thresholds.length; i++) {
+            if (count <= thresholds[i]) {
+                return i + 1;
+            }
+        }
+        return thresholds.length + 1;
     }
 
     private Map<LocalDate, Integer> index(List<CalendarDay> calendar) {
@@ -176,41 +178,6 @@ public class HeatmapCardRenderer implements CardRenderer {
             return null;
         }
         return calendar.get(calendar.size() - 1).date();
-    }
-
-    private int[] quartiles(Map<LocalDate, Integer> counts, LocalDate topLeft, LocalDate today) {
-        List<Integer> positive = new ArrayList<>();
-        for (LocalDate date = topLeft; !date.isAfter(today); date = date.plusDays(1)) {
-            int value = counts.getOrDefault(date, 0);
-            if (value > 0) {
-                positive.add(value);
-            }
-        }
-        if (positive.isEmpty()) {
-            return new int[]{1, 2, 3};
-        }
-        Collections.sort(positive);
-        return new int[]{
-                positive.get(positive.size() / 4),
-                positive.get(positive.size() / 2),
-                positive.get(positive.size() * 3 / 4)
-        };
-    }
-
-    private int level(int count, int[] thresholds) {
-        if (count <= 0) {
-            return 0;
-        }
-        if (count <= thresholds[0]) {
-            return 1;
-        }
-        if (count <= thresholds[1]) {
-            return 2;
-        }
-        if (count <= thresholds[2]) {
-            return 3;
-        }
-        return 4;
     }
 
     private String cells(Map<LocalDate, Integer> counts, LocalDate topLeft, LocalDate today,
@@ -263,17 +230,17 @@ public class HeatmapCardRenderer implements CardRenderer {
         return svg.toString();
     }
 
-    private String legend(Theme theme, int width) {
+    private String legend(Theme theme, int y, int cell) {
+        List<String> levels = theme.heatLevels();
         StringBuilder svg = new StringBuilder();
-        int y = GRID_TOP + ROWS * PITCH + 14;
-        int x = width - 200;
+        int x = WIDTH - 220;
         svg.append(Svg.textAnchored(x - 6, y + 9, theme.muted(), 11, 400, "end", "Less"));
-        for (int lvl = 0; lvl < 5; lvl++) {
+        for (int lvl = 0; lvl < levels.size(); lvl++) {
             svg.append("<rect x=\"").append(x + lvl * 15).append("\" y=\"").append(y)
-                    .append("\" width=\"").append(CELL).append("\" height=\"").append(CELL)
-                    .append("\" rx=\"2\" fill=\"").append(theme.heatLevels().get(lvl)).append("\"/>");
+                    .append("\" width=\"").append(cell).append("\" height=\"").append(cell)
+                    .append("\" rx=\"2\" fill=\"").append(levels.get(lvl)).append("\"/>");
         }
-        svg.append(Svg.text(x + 5 * 15 + 4, y + 9, theme.muted(), 11, 400, "More"));
+        svg.append(Svg.text(x + levels.size() * 15 + 4, y + 9, theme.muted(), 11, 400, "More"));
         return svg.toString();
     }
 }

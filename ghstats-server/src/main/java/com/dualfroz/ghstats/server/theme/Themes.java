@@ -15,7 +15,7 @@ public final class Themes {
             "#bb9af7",
             "#565f89",
             "#2f3549",
-            List.of("#232433", "#2c3a63", "#3d5aa0", "#5a7fd6", "#7aa2f7")
+            List.of("#232433", "#0e4429", "#006d32", "#26a641", "#39d353", "#57ff70")
     );
 
     private static final Theme LIGHT = new Theme(
@@ -26,7 +26,7 @@ public final class Themes {
             "#8250df",
             "#57606a",
             "#d0d7de",
-            List.of("#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39")
+            List.of("#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39", "#0a4423")
     );
 
     private static final Map<String, Theme> BY_NAME = Map.of(
