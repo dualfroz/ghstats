@@ -25,7 +25,7 @@ ghstats:
       - 284081405+dualfroz@users.noreply.github.com
       - 37844753+FoksVHox@users.noreply.github.com
     fullCountRepos:
-      - sekret
+      - secret
     baselineCommits: 0
     reposRoot: /srv/ghstats/repos
     snapshotPath: /srv/ghstats/data/snapshot.json
