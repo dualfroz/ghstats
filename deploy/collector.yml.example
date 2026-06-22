@@ -1,0 +1,22 @@
+# Optional override file for the collector, read from /etc/ghstats/collector.yml
+# by the systemd unit. Anything omitted here falls back to the jar defaults.
+ghstats:
+  collector:
+    owners:
+      - dualfroz
+      - VulCodeCom
+      - Sinlege
+    authorEmails:
+      - me@dualfroz.com
+      - me@dualfroz.com
+      - 284081405+dualfroz@users.noreply.github.com
+    # Repos where EVERY commit counts regardless of author (matched by bare name
+    # or owner/name). Use for backdated/prank repos with uncertain author mail.
+    fullCountRepos: []
+    # Manual offset added to totals.own_commits, for history removed later that
+    # you still want reflected. Keep at 0 unless you know you need it.
+    baselineCommits: 0
+    reposRoot: /srv/ghstats/repos
+    snapshotPath: /srv/ghstats/data/snapshot.json
+    calendarDays: 371
+    topReposCount: 6

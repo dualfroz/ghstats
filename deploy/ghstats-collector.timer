@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ghstats collector every 20 minutes
+
+[Timer]
+OnBootSec=3min
+OnUnitActiveSec=20min
+AccuracySec=1min
+Persistent=true
+Unit=ghstats-collector.service
+
+[Install]
+WantedBy=timers.target

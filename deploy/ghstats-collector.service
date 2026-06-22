@@ -1,0 +1,22 @@
+[Unit]
+Description=ghstats collector - enumerate repos, clone/pull, recompute snapshot.json
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ghstats
+Group=ghstats
+WorkingDirectory=/srv/ghstats
+# The User above must have: gh logged in (gh auth status), git configured, and
+# tokei on PATH. The overrides file is optional; the jar ships sane defaults
+# pointing at /srv/ghstats/repos and /srv/ghstats/data.
+Environment=JAVA_TOOL_OPTIONS=-XX:MaxRAMPercentage=60.0
+ExecStart=/usr/bin/java -jar /opt/ghstats/ghstats-collector.jar \
+    --spring.config.additional-location=optional:file:/etc/ghstats/collector.yml
+TimeoutStartSec=1800
+Nice=10
+IOSchedulingClass=idle
+
+[Install]
+WantedBy=multi-user.target
