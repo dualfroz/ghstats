@@ -3,6 +3,9 @@ package com.dualfroz.ghstats.server.web;
 import com.dualfroz.ghstats.server.ServerProperties;
 import com.dualfroz.ghstats.server.SnapshotState;
 import com.dualfroz.ghstats.server.SnapshotStore;
+import com.dualfroz.ghstats.server.discord.DiscordCardRenderer;
+import com.dualfroz.ghstats.server.discord.LanyardClient;
+import com.dualfroz.ghstats.server.discord.LanyardState;
 import com.dualfroz.ghstats.server.render.RenderOptions;
 import com.dualfroz.ghstats.server.theme.Theme;
 import com.dualfroz.ghstats.server.theme.Themes;
@@ -24,10 +27,15 @@ public class CardController {
 
     private final SnapshotStore store;
     private final ServerProperties properties;
+    private final LanyardClient lanyard;
+    private final DiscordCardRenderer discordRenderer;
 
-    public CardController(SnapshotStore store, ServerProperties properties) {
+    public CardController(SnapshotStore store, ServerProperties properties,
+                          LanyardClient lanyard, DiscordCardRenderer discordRenderer) {
         this.store = store;
         this.properties = properties;
+        this.lanyard = lanyard;
+        this.discordRenderer = discordRenderer;
     }
 
     @GetMapping("/stats")
@@ -104,6 +112,32 @@ public class CardController {
                                                 @RequestParam(name = "hide_border", required = false) String hideBorder,
                                                 @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
         return respond("achievements", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+    }
+
+    @GetMapping("/discord")
+    public ResponseEntity<String> discord(@RequestParam(required = false) String theme,
+                                          @RequestParam(name = "hide_border", required = false) String hideBorder,
+                                          @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
+        Theme resolved = resolveTheme(theme);
+        boolean hideBorderFlag = isTrue(hideBorder);
+        LanyardState lanyardState = lanyard.state();
+        String etag = "W/\"discord-" + Integer.toHexString(
+                (lanyardState.token() + resolved.name() + hideBorderFlag).hashCode()) + "\"";
+
+        CacheControl cacheControl = CacheControl
+                .maxAge(Duration.ofSeconds(properties.getDiscordCacheMaxAgeSeconds()))
+                .cachePublic();
+
+        if (etag.equals(ifNoneMatch)) {
+            return ResponseEntity.status(HttpStatus.NOT_MODIFIED).eTag(etag).cacheControl(cacheControl).build();
+        }
+        String svg = discordRenderer.render(lanyardState, resolved, hideBorderFlag);
+        return ResponseEntity.ok()
+                .contentType(SVG)
+                .eTag(etag)
+                .cacheControl(cacheControl)
+                .header(HttpHeaders.VARY, "Accept-Encoding")
+                .body(svg);
     }
 
     private ResponseEntity<String> respond(String cardKey, String themeParam, String hideBorderParam,

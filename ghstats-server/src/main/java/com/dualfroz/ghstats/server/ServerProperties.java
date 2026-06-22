@@ -10,6 +10,9 @@ public class ServerProperties {
     private int rateLimitPerMinute = 60;
     private int cacheMaxAgeSeconds = 1800;
     private String defaultTheme = "tokyonight";
+    private String lanyardUserId = "000000000000000000";
+    private int lanyardPollSeconds = 60;
+    private int discordCacheMaxAgeSeconds = 60;
 
     public String getSnapshotPath() {
         return snapshotPath;
@@ -49,5 +52,29 @@ public class ServerProperties {
 
     public void setDefaultTheme(String defaultTheme) {
         this.defaultTheme = defaultTheme;
+    }
+
+    public String getLanyardUserId() {
+        return lanyardUserId;
+    }
+
+    public void setLanyardUserId(String lanyardUserId) {
+        this.lanyardUserId = lanyardUserId;
+    }
+
+    public int getLanyardPollSeconds() {
+        return lanyardPollSeconds;
+    }
+
+    public void setLanyardPollSeconds(int lanyardPollSeconds) {
+        this.lanyardPollSeconds = lanyardPollSeconds;
+    }
+
+    public int getDiscordCacheMaxAgeSeconds() {
+        return discordCacheMaxAgeSeconds;
+    }
+
+    public void setDiscordCacheMaxAgeSeconds(int discordCacheMaxAgeSeconds) {
+        this.discordCacheMaxAgeSeconds = discordCacheMaxAgeSeconds;
     }
 }
