@@ -1,0 +1,21 @@
+package com.dualfroz.ghstats.common.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.Instant;
+import java.util.List;
+
+public record Snapshot(
+        Instant generatedAt,
+        Identity identity,
+        Totals totals,
+        Streak streak,
+        List<LanguageByLines> languagesByLines,
+        List<CalendarDay> calendar,
+        List<YearCount> byYear,
+        List<TopRepo> topRepos
+) {
+    @JsonIgnore
+    public boolean isEmpty() {
+        return totals == null || calendar == null || calendar.isEmpty();
+    }
+}

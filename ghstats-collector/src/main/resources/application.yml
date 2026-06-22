@@ -1,0 +1,43 @@
+spring:
+  main:
+    banner-mode: off
+  application:
+    name: ghstats-collector
+
+logging:
+  level:
+    root: INFO
+    com.dualfroz.ghstats: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n"
+
+ghstats:
+  collector:
+    owners:
+      - dualfroz
+      - VulCodeCom
+      - aphrodipl
+      - thelunaticstudios
+      - Sinlege
+    authorEmails:
+      - me@dualfroz.com
+      - me@dualfroz.com
+      - 284081405+dualfroz@users.noreply.github.com
+      - 37844753+FoksVHox@users.noreply.github.com
+    fullCountRepos:
+      - sekret
+    baselineCommits: 0
+    reposRoot: /srv/ghstats/repos
+    snapshotPath: /srv/ghstats/data/snapshot.json
+    ghBin: gh
+    gitBin: git
+    tokeiBin: tokei
+    cloneTimeoutSeconds: 600
+    gitTimeoutSeconds: 120
+    tokeiTimeoutSeconds: 120
+    enumerationTimeoutSeconds: 120
+    calendarDays: 371
+    topReposCount: 12
+    repoListLimit: 1000
+    identityLogin: dualfroz
+    identityName: DualFroz
