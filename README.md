@@ -261,15 +261,18 @@ Server (`ghstats.server.*`,
 | `discordBio`           | (empty)                          | About Me text; empty hides the section |
 | `discordPronouns`      | (empty)                          | pronouns shown next to `@username`; empty hides |
 | `discordBanner`        | (his real banner URL)            | banner: empty = blurple gradient, `#hex` = solid, `a,b` = gradient, `https://...` = image |
-| `discordBadges`        | nitro, boost, quest, orb, legacy | account badge icons drawn as inline SVG; empty = no badge box |
+| `discordBadges`        | nitro, boost, quest, orb, legacy | account badge keys; each maps to a real asset in classpath `badges/`; empty = no badge box |
 
 `/discord` renders a full Discord profile card (banner, avatar with status dot,
 display name + guild tag, About Me, and a live activity section - Spotify with
-album art and a progress bar, or the current game/status). A rounded badge box in the top-right of the banner shows account badges
-(`discordBadges`) drawn as inline gradient SVG (Nitro gem, Server Boost, Quest,
-Orb, legacy hashtag, with slots for active developer, early supporter and
-HypeSquad), because `public_flags` from Lanyard does not expose most of them.
-Lanyard has no bio, pronouns or banner, so those come from config. The server polls Lanyard, fetches
+album art and a progress bar, or the current game/status). A rounded badge box
+in the top-right of the card body (below the banner) shows account badges
+(`discordBadges`), because `public_flags` from Lanyard does not expose most of
+them. The badge icons are the real Discord assets, bundled on the classpath under
+`badges/` (`nitro.svg`, `boost.svg`, `quest.png`, `orb.svg`, `legacy.png`), read
+once at startup and inlined as base64; drop a new file there and add its key to
+extend the set. Lanyard has no bio, pronouns or banner, so those come from
+config. The server polls Lanyard, fetches
 each image (avatar, album art, guild badge, banner) and inlines it as a
 `data:` URI, because GitHub's `<img>` secure mode will not load external images
 from an SVG. It needs outbound HTTPS to `api.lanyard.rest`, `cdn.discordapp.com`

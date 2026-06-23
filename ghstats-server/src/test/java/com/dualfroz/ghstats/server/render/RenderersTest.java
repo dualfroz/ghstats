@@ -13,6 +13,7 @@ import com.dualfroz.ghstats.common.model.Totals;
 import com.dualfroz.ghstats.common.model.TopRepo;
 import com.dualfroz.ghstats.common.model.YearCount;
 import com.dualfroz.ghstats.server.ServerProperties;
+import com.dualfroz.ghstats.server.discord.DiscordBadges;
 import com.dualfroz.ghstats.server.discord.DiscordCardRenderer;
 import com.dualfroz.ghstats.server.discord.LanyardState;
 import com.dualfroz.ghstats.server.theme.Themes;
@@ -128,7 +129,7 @@ class RenderersTest {
         props.setDiscordBio("Backend and infra. Building ghstats and Spectra.");
         props.setDiscordPronouns("he/him");
 
-        String svg = new DiscordCardRenderer(props).render(state, false);
+        String svg = new DiscordCardRenderer(props, new DiscordBadges()).render(state, false);
         assertTrue(svg.startsWith("<svg"));
         assertTrue(svg.contains("[LOA] DualFroz"));
         assertTrue(svg.contains("@dualfroz"));
@@ -140,17 +141,15 @@ class RenderersTest {
         assertTrue(svg.contains("<image href=\"data:"));
         assertTrue(svg.contains("<animate"));
         assertTrue(svg.contains("#23a55a"));
-        assertTrue(svg.contains("url(#bgNitro)"));
-        assertTrue(svg.contains("url(#bgBoost)"));
-        assertTrue(svg.contains("url(#bgQuest)"));
-        assertTrue(svg.contains("url(#bgOrb)"));
-        assertTrue(svg.contains("url(#bgLegacy)"));
+        assertTrue(svg.contains("data:image/svg+xml;base64,"));
+        assertTrue(svg.contains("rgba(0,0,0,0.45)"));
         assertFalse(svg.contains("Error"));
     }
 
     @Test
     void discordNeutralWhenAbsent() {
-        String svg = new DiscordCardRenderer(new ServerProperties()).render(LanyardState.absent(), false);
+        String svg = new DiscordCardRenderer(new ServerProperties(), new DiscordBadges())
+                .render(LanyardState.absent(), false);
         assertTrue(svg.contains("DualFroz"));
         assertTrue(svg.contains("@dualfroz"));
         assertTrue(svg.contains("Discord"));
