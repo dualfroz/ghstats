@@ -23,9 +23,11 @@ public class DiscordCardRenderer {
     private static final int AV_R = 44;
 
     private final ServerProperties properties;
+    private final DiscordBadges badges;
 
-    public DiscordCardRenderer(ServerProperties properties) {
+    public DiscordCardRenderer(ServerProperties properties, DiscordBadges badges) {
         this.properties = properties;
+        this.badges = badges;
     }
 
     public String render(LanyardState state, boolean hideBorder) {
@@ -33,7 +35,6 @@ public class DiscordCardRenderer {
         StringBuilder body = new StringBuilder();
 
         body.append(banner(state, defs));
-        body.append(badgeBox(defs));
         body.append(avatar(state));
 
         int nameY = 176;
@@ -42,6 +43,7 @@ public class DiscordCardRenderer {
         int usernameY = nameY + 22;
         body.append(Svg.text(20, usernameY, MUTED, 15, 400, "@" + state.username()));
         body.append(pronouns(usernameY, "@" + state.username()));
+        body.append(badgeBox());
 
         int y = usernameY + 20;
         y = bio(body, y);
@@ -72,29 +74,29 @@ public class DiscordCardRenderer {
                 + "\" clip-path=\"url(#dcard)\"/>";
     }
 
-    private String badgeBox(StringBuilder defs) {
+    private String badgeBox() {
         List<String> drawable = properties.getDiscordBadges().stream()
-                .filter(DiscordBadges::known).toList();
+                .filter(badges::known).toList();
         if (drawable.isEmpty()) {
             return "";
         }
         int size = 22;
         int gap = 6;
         int padX = 8;
-        int padY = 7;
+        int padY = 6;
         int n = drawable.size();
         int boxW = padX * 2 + n * size + (n - 1) * gap;
         int boxH = size + padY * 2;
-        int boxX = W - 14 - boxW;
-        int boxY = 14;
+        int boxX = W - 16 - boxW;
+        int boxY = 114;
         StringBuilder svg = new StringBuilder();
         svg.append("<rect x=\"").append(boxX).append("\" y=\"").append(boxY).append("\" width=\"").append(boxW)
-                .append("\" height=\"").append(boxH).append("\" rx=\"12\" fill=\"rgba(0,0,0,0.45)\"")
+                .append("\" height=\"").append(boxH).append("\" rx=\"11\" fill=\"rgba(0,0,0,0.45)\"")
                 .append(" stroke=\"rgba(255,255,255,0.08)\" stroke-width=\"1\"/>");
         int gx = boxX + padX;
         int gy = boxY + padY;
         for (int i = 0; i < n; i++) {
-            svg.append(DiscordBadges.glyph(drawable.get(i), gx + i * (size + gap), gy, defs));
+            svg.append(badges.glyph(drawable.get(i), gx + i * (size + gap), gy, size));
         }
         return svg.toString();
     }

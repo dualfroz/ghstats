@@ -15,7 +15,7 @@ public class ServerProperties {
     private String lanyardUserId = "000000000000000000";
     private int lanyardPollSeconds = 30;
     private int discordCacheMaxAgeSeconds = 25;
-    private String discordBio = "Building things I don't know how to build yet.";
+    private String discordBio = "";
     private String discordPronouns = "Strange(r)";
     private String discordBanner =
             "https://cdn.discordapp.com/banners/000000000000000000/06aacf47ba5d24b864e014407ee28661.png?size=480";

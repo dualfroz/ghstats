@@ -27,7 +27,7 @@ ghstats:
     lanyardUserId: "000000000000000000"
     lanyardPollSeconds: 30
     discordCacheMaxAgeSeconds: 25
-    discordBio: "Building things I don't know how to build yet."
+    discordBio: ""
     discordPronouns: "Strange(r)"
     discordBanner: "https://cdn.discordapp.com/banners/000000000000000000/06aacf47ba5d24b864e014407ee28661.png?size=480"
     discordBadges:
