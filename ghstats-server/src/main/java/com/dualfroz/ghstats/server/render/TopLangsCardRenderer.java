@@ -29,21 +29,21 @@ public class TopLangsCardRenderer implements CardRenderer {
 
         List<LanguageByLines> languages = snapshot.languagesByLines();
         StringBuilder body = new StringBuilder();
-        body.append(Svg.title(25, 37, theme, "Most Used Languages"));
+        body.append(Svg.title(25, 37, theme, options.labels().get("langs.title")));
         body.append(divider(theme));
 
         if (languages == null || languages.isEmpty()) {
-            body.append(Svg.text(25, 90, theme.muted(), 14, 400, "No language data available."));
+            body.append(Svg.text(25, 90, theme.muted(), 14, 400, options.labels().get("langs.empty")));
             return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
-                    "Most used languages - no data", body.toString());
+                    options.labels().get("langs.emptyTitle"), body.toString());
         }
 
-        List<Slice> slices = buildSlices(languages);
+        List<Slice> slices = buildSlices(languages, options.labels());
         body.append("<g class=\"pie-grow\">").append(pie(slices, 108, 138, 66, theme)).append("</g>");
         body.append(legend(slices, theme));
 
         return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
-                "Most used languages pie chart", body.toString());
+                options.labels().get("langs.alt"), body.toString());
     }
 
     private String divider(Theme theme) {
@@ -51,7 +51,7 @@ public class TopLangsCardRenderer implements CardRenderer {
                 + theme.border() + "\" stroke-width=\"1\"/>";
     }
 
-    private List<Slice> buildSlices(List<LanguageByLines> languages) {
+    private List<Slice> buildSlices(List<LanguageByLines> languages, Labels labels) {
         List<Slice> slices = new ArrayList<>();
         double coveredShare = 0;
         int limit = Math.min(TOP_N, languages.size());
@@ -62,7 +62,7 @@ public class TopLangsCardRenderer implements CardRenderer {
         }
         double remaining = 1.0 - coveredShare;
         if (languages.size() > limit && remaining > 0.0005) {
-            slices.add(new Slice("Other", remaining, LanguageColors.UNKNOWN));
+            slices.add(new Slice(labels.get("langs.other"), remaining, LanguageColors.UNKNOWN));
         }
         return slices;
     }

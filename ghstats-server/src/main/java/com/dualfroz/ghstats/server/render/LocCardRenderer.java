@@ -24,12 +24,12 @@ public class LocCardRenderer implements CardRenderer {
         Totals totals = snapshot.totals();
 
         StringBuilder body = new StringBuilder();
-        body.append(Svg.title(25, 34, theme, "Lines Written"));
+        body.append(Svg.title(25, 34, theme, options.labels().get("loc.title")));
         body.append("<line x1=\"25\" y1=\"46\" x2=\"").append(WIDTH - 25)
                 .append("\" y2=\"46\" stroke=\"").append(theme.border()).append("\" stroke-width=\"1\"/>");
 
         if (totals == null) {
-            body.append(Svg.text(25, 90, theme.muted(), 14, 400, "No line data available."));
+            body.append(Svg.text(25, 90, theme.muted(), 14, 400, options.labels().get("loc.empty")));
             return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
                     "Lines written", body.toString());
         }
@@ -40,7 +40,7 @@ public class LocCardRenderer implements CardRenderer {
 
         body.append(Svg.textAnchored(WIDTH / 2.0, 104, theme.title(), 42, 700, "middle", Format.grouped(net)));
         body.append(Svg.textAnchored(WIDTH / 2.0, 128, theme.muted(), 12, 400, "middle",
-                "net lines written, all-time"));
+                options.labels().get("loc.caption")));
 
         long span = added + removed;
         if (span > 0) {
@@ -51,7 +51,7 @@ public class LocCardRenderer implements CardRenderer {
         }
 
         return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
-                "Lines written net with added and removed", body.toString());
+                options.labels().get("loc.alt"), body.toString());
     }
 
     private String bar(long added, long removed, Theme theme, int x, int y, int barWidth, int barHeight) {

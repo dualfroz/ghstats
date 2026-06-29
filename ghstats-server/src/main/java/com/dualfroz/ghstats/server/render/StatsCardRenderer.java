@@ -28,17 +28,19 @@ public class StatsCardRenderer implements CardRenderer {
                 ? snapshot.identity().name()
                 : "GitHub";
 
+        Labels labels = options.labels();
+        String cardName = options.nameOr(name);
         List<Row> rows = List.of(
-                new Row("Own commits (all-time)", Format.grouped(totals.ownCommits())),
-                new Row("Repositories", Format.grouped(totals.reposOwn())),
-                new Row("Total stars earned", Format.grouped(totals.stars())),
-                new Row("Languages used", Format.grouped(totals.languages())),
-                new Row("Active days", Format.grouped(totals.activeDays())),
-                new Row("Lines written", Format.grouped(totals.linesAdded() - totals.linesRemoved()))
+                new Row(labels.get("stats.commits"), Format.grouped(totals.ownCommits())),
+                new Row(labels.get("stats.repos"), Format.grouped(totals.reposOwn())),
+                new Row(labels.get("stats.stars"), Format.grouped(totals.stars())),
+                new Row(labels.get("stats.languages"), Format.grouped(totals.languages())),
+                new Row(labels.get("stats.activeDays"), Format.grouped(totals.activeDays())),
+                new Row(labels.get("stats.linesWritten"), Format.grouped(totals.linesAdded() - totals.linesRemoved()))
         );
 
         StringBuilder body = new StringBuilder();
-        body.append(Svg.title(25, 37, theme, name + "'s GitHub Stats"));
+        body.append(Svg.title(25, 37, theme, labels.get("stats.title", cardName)));
         body.append("<line x1=\"25\" y1=\"50\" x2=\"").append(width - 25)
                 .append("\" y2=\"50\" stroke=\"").append(theme.border()).append("\" stroke-width=\"1\"/>");
 
@@ -55,18 +57,18 @@ public class StatsCardRenderer implements CardRenderer {
             body.append(Svg.textAnchored(width - 25, y, theme.title(), 14, 700, "end", row.value()));
             body.append("</g>");
         }
-        body.append(diffRow(theme, width, startY + rows.size() * step, totals.linesAdded(), totals.linesRemoved()));
+        body.append(diffRow(theme, width, startY + rows.size() * step, totals.linesAdded(), totals.linesRemoved(), labels));
 
         return Svg.document(width, height, theme, options.hideBorder(),
-                name + " GitHub stats overview", body.toString());
+                labels.get("stats.title", cardName), body.toString());
     }
 
-    private String diffRow(Theme theme, int width, int y, long added, long removed) {
+    private String diffRow(Theme theme, int width, int y, long added, long removed, Labels labels) {
         StringBuilder svg = new StringBuilder();
         svg.append("<g class=\"fadein\" style=\"animation-delay:0.57s\">");
         svg.append("<circle cx=\"33\" cy=\"").append(y - 4).append("\" r=\"3.5\" fill=\"")
                 .append(theme.icon()).append("\"/>");
-        svg.append(Svg.text(48, y, theme.text(), 14, 400, "Lines added / removed"));
+        svg.append(Svg.text(48, y, theme.text(), 14, 400, labels.get("stats.linesAddedRemoved")));
         svg.append("<text x=\"").append(width - 25).append("\" y=\"").append(y)
                 .append("\" text-anchor=\"end\" font-size=\"14\" font-weight=\"700\">")
                 .append("<tspan fill=\"#3fb950\">+").append(Svg.escape(Format.grouped(added))).append("</tspan>")

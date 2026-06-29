@@ -23,14 +23,14 @@ public class ByYearCardRenderer implements CardRenderer {
         List<YearCount> byYear = snapshot.byYear();
 
         StringBuilder body = new StringBuilder();
-        body.append(Svg.title(25, 37, theme, "Commits per Year"));
+        body.append(Svg.title(25, 37, theme, options.labels().get("year.title")));
         body.append("<line x1=\"25\" y1=\"50\" x2=\"").append(WIDTH - 25)
                 .append("\" y2=\"50\" stroke=\"").append(theme.border()).append("\" stroke-width=\"1\"/>");
 
         if (byYear == null || byYear.isEmpty()) {
-            body.append(Svg.text(25, 95, theme.muted(), 14, 400, "No yearly data available."));
+            body.append(Svg.text(25, 95, theme.muted(), 14, 400, options.labels().get("year.empty")));
             return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
-                    "Commits per year - no data", body.toString());
+                    options.labels().get("year.emptyTitle"), body.toString());
         }
 
         double plotLeft = 40;
@@ -69,6 +69,6 @@ public class ByYearCardRenderer implements CardRenderer {
         }
 
         return Svg.document(WIDTH, HEIGHT, theme, options.hideBorder(),
-                "Commits per year bar chart", body.toString());
+                options.labels().get("year.alt"), body.toString());
     }
 }
