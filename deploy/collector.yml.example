@@ -20,6 +20,9 @@ ghstats:
     languageAliases:
       Tsx: TypeScript
       Jsx: JavaScript
+      C Header: C
+      C/C++ Header: C
+      C++ Header: C++
     languageDenylist:
       - JSON
       - YAML

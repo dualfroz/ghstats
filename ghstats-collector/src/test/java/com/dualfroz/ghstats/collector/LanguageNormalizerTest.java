@@ -10,7 +10,12 @@ import org.junit.jupiter.api.Test;
 class LanguageNormalizerTest {
 
     private static final List<String> DENYLIST = List.of("JSON", "YAML", "Markdown");
-    private static final Map<String, String> ALIASES = Map.of("Tsx", "TypeScript", "Jsx", "JavaScript");
+    private static final Map<String, String> ALIASES = Map.of(
+            "Tsx", "TypeScript",
+            "Jsx", "JavaScript",
+            "C Header", "C",
+            "C/C++ Header", "C",
+            "C++ Header", "C++");
 
     @Test
     void mergesTsxIntoTypeScriptAndJsxIntoJavaScript() {
@@ -28,6 +33,24 @@ class LanguageNormalizerTest {
         assertEquals(80L, kept.get("Rust"));
         assertFalse(kept.containsKey("Tsx"));
         assertFalse(kept.containsKey("Jsx"));
+    }
+
+    @Test
+    void mergesCHeaderVariantsIntoC() {
+        Map<String, Long> raw = Map.of(
+                "C", 100L,
+                "C Header", 40L,
+                "C/C++ Header", 10L,
+                "C++", 200L,
+                "C++ Header", 30L);
+
+        Map<String, Long> kept = LanguageNormalizer.normalize(raw, DENYLIST, ALIASES);
+
+        assertEquals(150L, kept.get("C"));
+        assertEquals(230L, kept.get("C++"));
+        assertFalse(kept.containsKey("C Header"));
+        assertFalse(kept.containsKey("C/C++ Header"));
+        assertFalse(kept.containsKey("C++ Header"));
     }
 
     @Test

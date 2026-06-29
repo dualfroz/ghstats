@@ -29,4 +29,27 @@ public final class LanguageNormalizer {
         });
         return kept;
     }
+
+    /**
+     * Canonical name for a single language, or null when the denylist drops it. Same
+     * rules as {@link #normalize}, for callers that aggregate something other than a
+     * line count - counting repositories per language, for instance, where summing
+     * would double-count a repository whose two aliases collapse into one name.
+     */
+    public static String canonicalOrNull(String language, List<String> denylist,
+                                         Map<String, String> aliases) {
+        String canonical = language;
+        for (Map.Entry<String, String> alias : aliases.entrySet()) {
+            if (alias.getKey().equalsIgnoreCase(language)) {
+                canonical = alias.getValue();
+                break;
+            }
+        }
+        for (String denied : denylist) {
+            if (denied.equalsIgnoreCase(canonical)) {
+                return null;
+            }
+        }
+        return canonical;
+    }
 }

@@ -21,7 +21,10 @@ public class CollectorProperties {
     );
     private Map<String, String> languageAliases = Map.of(
             "Tsx", "TypeScript",
-            "Jsx", "JavaScript"
+            "Jsx", "JavaScript",
+            "C Header", "C",
+            "C/C++ Header", "C",
+            "C++ Header", "C++"
     );
     private String reposRoot = "/srv/ghstats/repos";
     private String snapshotPath = "/srv/ghstats/data/snapshot.json";

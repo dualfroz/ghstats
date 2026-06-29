@@ -11,6 +11,9 @@ public record Totals(
         int followers,
         int publicRepos,
         long linesAdded,
-        long linesRemoved
+        long linesRemoved,
+        long longestCommitChurn,
+        long charsOfCode,
+        int projects
 ) {
 }

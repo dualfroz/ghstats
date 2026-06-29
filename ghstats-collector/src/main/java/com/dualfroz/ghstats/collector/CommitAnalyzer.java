@@ -23,8 +23,41 @@ public class CommitAnalyzer {
             Map<LocalDate, Integer> dayCounts,
             int[][] punch,
             long linesAdded,
-            long linesRemoved) {
+            long linesRemoved,
+            Map<LocalDate, long[]> locByDay,
+            long longestCommitChurn,
+            Map<String, Integer> firstYearByLanguage,
+            Map<String, Long> addedByLanguage) {
     }
+
+    // Map file extension -> language name, using the exact names tokei/the
+    // normalizer produce, so per-language first-use years join cleanly onto the
+    // language breakdown. Only extensions we care to attribute are listed; anything
+    // else (data files, assets) is intentionally ignored.
+    private static final Map<String, String> EXT_TO_LANGUAGE = Map.ofEntries(
+            Map.entry("ts", "TypeScript"), Map.entry("tsx", "TypeScript"), Map.entry("mts", "TypeScript"),
+            Map.entry("js", "JavaScript"), Map.entry("jsx", "JavaScript"), Map.entry("mjs", "JavaScript"),
+            Map.entry("cjs", "JavaScript"),
+            Map.entry("rs", "Rust"),
+            Map.entry("php", "PHP"),
+            Map.entry("go", "Go"),
+            Map.entry("cs", "C#"),
+            Map.entry("py", "Python"),
+            Map.entry("ex", "Elixir"), Map.entry("exs", "Elixir"),
+            Map.entry("kt", "Kotlin"), Map.entry("kts", "Kotlin"),
+            Map.entry("java", "Java"),
+            Map.entry("swift", "Swift"),
+            Map.entry("rb", "Ruby"),
+            Map.entry("cpp", "C++"), Map.entry("cc", "C++"), Map.entry("cxx", "C++"), Map.entry("hpp", "C++"),
+            Map.entry("c", "C"), Map.entry("h", "C"),
+            Map.entry("html", "HTML"), Map.entry("htm", "HTML"),
+            Map.entry("css", "CSS"),
+            Map.entry("scss", "Sass"), Map.entry("sass", "Sass"),
+            Map.entry("dart", "Dart"),
+            Map.entry("vue", "Vue"),
+            Map.entry("svelte", "Svelte"),
+            Map.entry("sql", "SQL"),
+            Map.entry("sh", "Shell"), Map.entry("bash", "Shell"));
 
     private final ProcessRunner processRunner;
     private final CollectorProperties properties;
@@ -46,14 +79,19 @@ public class CommitAnalyzer {
                 null, Duration.ofSeconds(properties.getNumstatTimeoutSeconds()));
 
         Map<LocalDate, Integer> dayCounts = new HashMap<>();
+        Map<LocalDate, long[]> locByDay = new HashMap<>();
+        Map<String, Integer> firstYearByLanguage = new HashMap<>();
+        Map<String, Long> addedByLanguage = new HashMap<>();
         int[][] punch = new int[7][24];
         if (!result.ok()) {
-            return new CommitScan(0, dayCounts, punch, 0, 0);
+            return new CommitScan(0, dayCounts, punch, 0, 0, locByDay, 0, firstYearByLanguage,
+                    addedByLanguage);
         }
 
         int ownCommits = 0;
         long linesAdded = 0;
         long linesRemoved = 0;
+        long longestCommitChurn = 0;
 
         for (String record : result.stdout().split(RECORD_SEPARATOR)) {
             if (record.isBlank()) {
@@ -86,16 +124,59 @@ public class CommitAnalyzer {
             }
 
             if (newline >= 0) {
+                long commitAdded = 0;
+                long commitRemoved = 0;
+                int commitYear = date.getYear();
                 for (String statLine : record.substring(newline + 1).split("\n")) {
                     long[] delta = parseNumstat(statLine);
                     if (delta != null) {
-                        linesAdded += delta[0];
-                        linesRemoved += delta[1];
+                        commitAdded += delta[0];
+                        commitRemoved += delta[1];
+                    }
+                    String language = languageForStatLine(statLine);
+                    if (language != null) {
+                        firstYearByLanguage.merge(language, commitYear, Math::min);
+                        // Authored-lines attribution: credit the language with the lines this
+                        // commit ADDED to files of that language (gross added, no subtraction of
+                        // removed). Binary files report "-" churn (delta == null) and are skipped.
+                        if (delta != null) {
+                            addedByLanguage.merge(language, delta[0], Long::sum);
+                        }
                     }
                 }
+                linesAdded += commitAdded;
+                linesRemoved += commitRemoved;
+                longestCommitChurn = Math.max(longestCommitChurn, commitAdded + commitRemoved);
+                locByDay.merge(date, new long[]{commitAdded, commitRemoved}, (existing, added) -> {
+                    existing[0] += added[0];
+                    existing[1] += added[1];
+                    return existing;
+                });
             }
         }
-        return new CommitScan(ownCommits, dayCounts, punch, linesAdded, linesRemoved);
+        return new CommitScan(ownCommits, dayCounts, punch, linesAdded, linesRemoved, locByDay,
+                longestCommitChurn, firstYearByLanguage, addedByLanguage);
+    }
+
+    // Extract the language of a numstat line ("added\tremoved\tpath") from the file
+    // extension of its path. Handles rename forms ("a => b", "dir/{a => b}/c") by
+    // taking the text after the last "=>" and trimming braces.
+    private static String languageForStatLine(String statLine) {
+        int lastTab = statLine.lastIndexOf('\t');
+        if (lastTab < 0) {
+            return null;
+        }
+        String path = statLine.substring(lastTab + 1).trim();
+        int arrow = path.lastIndexOf("=> ");
+        if (arrow >= 0) {
+            path = path.substring(arrow + 3).replace("}", "").trim();
+        }
+        int dot = path.lastIndexOf('.');
+        if (dot < 0 || dot == path.length() - 1) {
+            return null;
+        }
+        String ext = path.substring(dot + 1).toLowerCase();
+        return EXT_TO_LANGUAGE.get(ext);
     }
 
     private static long[] parseNumstat(String line) {

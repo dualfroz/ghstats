@@ -43,6 +43,9 @@ ghstats:
     languageAliases:
       Tsx: TypeScript
       Jsx: JavaScript
+      C Header: C
+      C/C++ Header: C
+      C++ Header: C++
     reposRoot: /srv/ghstats/repos
     snapshotPath: /srv/ghstats/data/snapshot.json
     ghBin: gh

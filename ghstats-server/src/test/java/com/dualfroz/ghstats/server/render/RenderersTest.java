@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.dualfroz.ghstats.common.model.CalendarDay;
 import com.dualfroz.ghstats.common.model.Identity;
 import com.dualfroz.ghstats.common.model.LanguageByLines;
+import com.dualfroz.ghstats.common.model.LanguageFirstYear;
+import com.dualfroz.ghstats.common.model.LocPerDay;
 import com.dualfroz.ghstats.common.model.PunchCell;
 import com.dualfroz.ghstats.common.model.Snapshot;
 import com.dualfroz.ghstats.common.model.Streak;
@@ -43,7 +45,7 @@ class RenderersTest {
         return new Snapshot(
                 Instant.parse("2026-08-25T18:00:00Z"),
                 new Identity("dualfroz", "DualFroz"),
-                new Totals(12345, 34, 186, 210, 8, 987654, 512, 42, 34, 1234567, 234567),
+                new Totals(12345, 34, 186, 210, 8, 987654, 512, 42, 34, 1234567, 234567, 814, 61728394, 72),
                 new Streak(7, 40, LocalDate.of(2026, 8, 19), LocalDate.of(2026, 8, 25)),
                 List.of(
                         new LanguageByLines("TypeScript", 400000, 0.4, "#3178c6"),
@@ -60,7 +62,12 @@ class RenderersTest {
                 List.of(new TopRepo("dualfroz/secret", 7044), new TopRepo("dualfroz/ghstats", 320),
                         new TopRepo("VulCodeCom/panel", 210)),
                 List.of(new PunchCell(1, 9, 5), new PunchCell(3, 14, 12),
-                        new PunchCell(6, 22, 3), new PunchCell(5, 10, 8)));
+                        new PunchCell(6, 22, 3), new PunchCell(5, 10, 8)),
+                List.of(new LocPerDay(today.minusDays(2), 320, 40),
+                        new LocPerDay(today.minusDays(1), 180, 12),
+                        new LocPerDay(today, 90, 5)),
+                List.of(new LanguageFirstYear("TypeScript", 2019),
+                        new LanguageFirstYear("Rust", 2022)));
     }
 
     @Test
@@ -216,7 +223,7 @@ class RenderersTest {
     void noDataCardWhenSnapshotEmpty() {
         Snapshot empty = new Snapshot(Instant.now(), new Identity("x", "x"), null,
                 new Streak(0, 0, null, null), List.of(), List.of(), List.of(), List.of(),
-                List.of(), List.of());
+                List.of(), List.of(), List.of(), List.of());
         assertTrue(empty.isEmpty());
         String svg = NoDataCard.render("stats", options.theme(), false);
         assertTrue(svg.contains("No data available"));

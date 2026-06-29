@@ -14,7 +14,7 @@ services:
       GHSTATS_SERVER_SNAPSHOTPATH: /srv/ghstats/data/snapshot.json
       GHSTATS_SERVER_POLLINTERVALSECONDS: "30"
       GHSTATS_SERVER_RATELIMITPERMINUTE: "60"
-      GHSTATS_SERVER_CACHEMAXAGESECONDS: "1800"
+      GHSTATS_SERVER_CACHEMAXAGESECONDS: "60"
       GHSTATS_SERVER_DEFAULTTHEME: tokyonight
     healthcheck:
       test: ["CMD", "sh", "-c", "wget -qO- http://127.0.0.1:14330/healthz || exit 1"]

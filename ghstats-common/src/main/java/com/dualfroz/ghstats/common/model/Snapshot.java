@@ -14,7 +14,9 @@ public record Snapshot(
         List<CalendarDay> calendarAll,
         List<YearCount> byYear,
         List<TopRepo> topRepos,
-        List<PunchCell> punchCard
+        List<PunchCell> punchCard,
+        List<LocPerDay> locPerDay,
+        List<LanguageFirstYear> languageFirstYear
 ) {
     @JsonIgnore
     public boolean isEmpty() {
