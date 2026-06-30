@@ -46,6 +46,7 @@ ghstats:
       C Header: C
       C/C++ Header: C
       C++ Header: C++
+      GNU Style Assembly: Assembly
     reposRoot: /srv/ghstats/repos
     snapshotPath: /srv/ghstats/data/snapshot.json
     ghBin: gh

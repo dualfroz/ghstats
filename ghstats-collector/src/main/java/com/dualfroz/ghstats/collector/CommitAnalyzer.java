@@ -57,7 +57,14 @@ public class CommitAnalyzer {
             Map.entry("vue", "Vue"),
             Map.entry("svelte", "Svelte"),
             Map.entry("sql", "SQL"),
-            Map.entry("sh", "Shell"), Map.entry("bash", "Shell"));
+            Map.entry("sh", "Shell"), Map.entry("bash", "Shell"),
+            Map.entry("hs", "Haskell"), Map.entry("lhs", "Haskell"),
+            Map.entry("lua", "Lua"),
+            Map.entry("zig", "Zig"),
+            Map.entry("fs", "F#"), Map.entry("fsx", "F#"), Map.entry("fsi", "F#"),
+            Map.entry("scala", "Scala"),
+            Map.entry("sol", "Solidity"),
+            Map.entry("s", "Assembly"), Map.entry("asm", "Assembly"));
 
     private final ProcessRunner processRunner;
     private final CollectorProperties properties;

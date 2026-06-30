@@ -41,15 +41,19 @@ public class CardController {
     @GetMapping("/stats")
     public ResponseEntity<String> stats(@RequestParam(required = false) String theme,
                                         @RequestParam(name = "hide_border", required = false) String hideBorder,
-                                        @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        return respond("stats", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+                                        @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch,
+                                        @RequestParam(required = false) String lang,
+                                        @RequestParam(required = false) String name) {
+        return respond("stats", theme, hideBorder, RenderOptions.RANGE_YEAR, lang, name, ifNoneMatch);
     }
 
     @GetMapping("/top-langs")
     public ResponseEntity<String> topLangs(@RequestParam(required = false) String theme,
                                            @RequestParam(name = "hide_border", required = false) String hideBorder,
-                                           @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        return respond("top-langs", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+                                           @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch,
+                                           @RequestParam(required = false) String lang,
+                                           @RequestParam(required = false) String name) {
+        return respond("top-langs", theme, hideBorder, RenderOptions.RANGE_YEAR, lang, name, ifNoneMatch);
     }
 
     @GetMapping("/streak")
@@ -82,15 +86,19 @@ public class CardController {
     @GetMapping("/loc")
     public ResponseEntity<String> loc(@RequestParam(required = false) String theme,
                                       @RequestParam(name = "hide_border", required = false) String hideBorder,
-                                      @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        return respond("loc", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+                                      @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch,
+                                      @RequestParam(required = false) String lang,
+                                      @RequestParam(required = false) String name) {
+        return respond("loc", theme, hideBorder, RenderOptions.RANGE_YEAR, lang, name, ifNoneMatch);
     }
 
     @GetMapping("/by-year")
     public ResponseEntity<String> byYear(@RequestParam(required = false) String theme,
                                          @RequestParam(name = "hide_border", required = false) String hideBorder,
-                                         @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch) {
-        return respond("by-year", theme, hideBorder, RenderOptions.RANGE_YEAR, ifNoneMatch);
+                                         @RequestHeader(name = "If-None-Match", required = false) String ifNoneMatch,
+                                         @RequestParam(required = false) String lang,
+                                         @RequestParam(required = false) String name) {
+        return respond("by-year", theme, hideBorder, RenderOptions.RANGE_YEAR, lang, name, ifNoneMatch);
     }
 
     @GetMapping("/top-repos")
@@ -141,11 +149,17 @@ public class CardController {
 
     private ResponseEntity<String> respond(String cardKey, String themeParam, String hideBorderParam,
                                            String range, String ifNoneMatch) {
+        return respond(cardKey, themeParam, hideBorderParam, range, null, null, ifNoneMatch);
+    }
+
+    private ResponseEntity<String> respond(String cardKey, String themeParam, String hideBorderParam,
+                                           String range, String lang, String name, String ifNoneMatch) {
         SnapshotState snapshotState = store.state();
         Theme theme = resolveTheme(themeParam);
         boolean hideBorder = isTrue(hideBorderParam);
         String etag = snapshotState.etag().substring(0, snapshotState.etag().length() - 1)
-                + "-" + cardKey + "-" + theme.name() + "-" + hideBorder + "-" + range + "\"";
+                + "-" + cardKey + "-" + theme.name() + "-" + hideBorder + "-" + range
+                + "-" + (lang == null ? "en" : lang) + "-" + (name == null ? "" : name) + "\"";
 
         CacheControl cacheControl = CacheControl
                 .maxAge(Duration.ofSeconds(properties.getCacheMaxAgeSeconds()))
@@ -158,7 +172,8 @@ public class CardController {
                     .build();
         }
 
-        RenderOptions options = new RenderOptions(theme, hideBorder, range);
+        RenderOptions options = new RenderOptions(theme, hideBorder, range,
+                lang == null ? RenderOptions.LANG_EN : lang, name);
         String svg = store.renderCard(cardKey, options);
 
         return ResponseEntity.ok()
