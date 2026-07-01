@@ -56,6 +56,27 @@ class CommitAnalyzerTest {
     }
 
     @Test
+    void attributesPortfolioLanguagesThatWereMissingFromTheExtensionMap() {
+        writeAndCommit("Parser.hs", lines(2), "add haskell");
+        writeAndCommit("init.lua", lines(3), "add lua");
+        writeAndCommit("main.zig", lines(4), "add zig");
+        writeAndCommit("Lexer.fs", lines(5), "add fsharp");
+        writeAndCommit("Engine.scala", lines(6), "add scala");
+        writeAndCommit("Pool.sol", lines(7), "add solidity");
+        writeAndCommit("boot.s", lines(8), "add assembly");
+
+        Map<String, Long> byLanguage = analyzer.analyze(repo, false).addedByLanguage();
+
+        assertEquals(2L, byLanguage.get("Haskell"));
+        assertEquals(3L, byLanguage.get("Lua"));
+        assertEquals(4L, byLanguage.get("Zig"));
+        assertEquals(5L, byLanguage.get("F#"));
+        assertEquals(6L, byLanguage.get("Scala"));
+        assertEquals(7L, byLanguage.get("Solidity"));
+        assertEquals(8L, byLanguage.get("Assembly"));
+    }
+
+    @Test
     void countsGrossAddedNotNetChurn() {
         writeAndCommit("app.ts", "alpha\nbeta\ngamma\ndelta\nepsilon\nzeta\n", "add ts");
         // Replace with fully distinct content: git sees 6 removed and 4 added. Gross-added
