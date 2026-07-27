@@ -1,0 +1,109 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+require __DIR__ . '/../src/bootstrap.php';
+
+use Ghapi\Collect\Collector;
+use Ghapi\Collect\Notifier;
+use Ghapi\Collect\Seeder;
+use Ghapi\Collect\SnapshotBuilder;
+use Ghapi\Collect\StateStore;
+use Ghapi\Collect\Tokei;
+use Ghapi\Config;
+use Ghapi\Discord\Commands;
+use Ghapi\GitHub\Client;
+use Ghapi\GitHub\Source;
+use Ghapi\Support\Json;
+use Ghapi\Support\Log;
+
+ini_set('memory_limit', '2G');
+
+$arguments = array_slice($argv, 1);
+$command = array_shift($arguments) ?? 'help';
+$flags = [];
+$positional = [];
+foreach ($arguments as $argument) {
+    if (str_starts_with($argument, '--')) {
+        [$key, $value] = array_pad(explode('=', substr($argument, 2), 2), 2, true);
+        $flags[$key] = $value;
+    } else {
+        $positional[] = $argument;
+    }
+}
+
+$config = Config::load(isset($flags['config']) ? (string) $flags['config'] : null);
+$store = new StateStore($config->string('stateDir'));
+$tokei = new Tokei($config->string('tokeiBin'), $config->list('languageAliases'), $config->list('languageDenylist'));
+$tokei = $tokei->available() ? $tokei : null;
+
+try {
+    switch ($command) {
+        case 'collect':
+            if ($tokei === null) {
+                Log::warn('tokei not found, live code lines will fall back to GitHub language bytes');
+            }
+            $source = new Source(new Client((string) getenv('GH_TOKEN')));
+            $webhook = $config->string('discordWebhook');
+            $collector = new Collector(
+                $config,
+                $store,
+                $source,
+                $tokei,
+                new SnapshotBuilder($config, $store),
+                $webhook !== '' ? new Notifier($webhook, $config->string('publicBaseUrl')) : null,
+            );
+            $report = $collector->run([
+                'full' => isset($flags['full']),
+                'force' => isset($flags['force']),
+                'only' => isset($flags['only']) ? (string) $flags['only'] : null,
+                'skipTrees' => isset($flags['skip-trees']),
+                'skipOss' => isset($flags['skip-oss']),
+            ]);
+            echo Json::encode($report, true), "\n";
+            exit(in_array($report['status'], ['ok', 'idle'], true) ? 0 : 1);
+
+        case 'seed':
+            $root = $positional[0] ?? '/srv/ghstats/repos';
+            $seeder = new Seeder($config, $store, $tokei);
+            echo Json::encode($seeder->seedRoot($root, isset($flags['only']) ? (string) $flags['only'] : null), true), "\n";
+            exit(0);
+
+        case 'snapshot':
+            $snapshot = (new SnapshotBuilder($config, $store))->build($store->load('meta') ?? []);
+            echo Json::encode($snapshot['totals'], true), "\n";
+            exit(0);
+
+        case 'key':
+            $label = $positional[0] ?? 'default';
+            $key = 'gha_' . bin2hex(random_bytes(24));
+            echo Json::encode(['label' => $label, 'key' => $key, 'configEntry' => ['label' => $label, 'sha256' => hash('sha256', $key)]], true), "\n";
+            exit(0);
+
+        case 'discord:register':
+            $tokenFile = $config->string('discordBotTokenFile');
+            $token = is_file($tokenFile) ? trim((string) file_get_contents($tokenFile)) : '';
+            if ($token === '' || $config->string('discordApplicationId') === '') {
+                fwrite(STDERR, "discordApplicationId and a readable discordBotTokenFile are required\n");
+                exit(2);
+            }
+            $result = Commands::register($config->string('discordApplicationId'), $token);
+            echo Json::encode($result, true), "\n";
+            exit($result['ok'] ? 0 : 1);
+
+        default:
+            echo <<<TXT
+            ghapi collect [--force] [--full] [--only=owner/repo] [--skip-trees] [--skip-oss]
+            ghapi seed [/srv/ghstats/repos] [--only=owner/repo]
+            ghapi snapshot
+            ghapi key <label>
+            ghapi discord:register
+
+            TXT;
+            exit($command === 'help' ? 0 : 2);
+    }
+} catch (Throwable $failure) {
+    Log::warn($failure->getMessage());
+    exit(1);
+}
