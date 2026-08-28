@@ -1,0 +1,4 @@
+{
+    "discordWebhook": "https://discord.com/api/webhooks/<id>/<token>",
+    "discordBotTokenFile": "/etc/ghapi/discord-bot-token"
+}

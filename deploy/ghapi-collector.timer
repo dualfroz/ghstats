@@ -1,0 +1,12 @@
+[Unit]
+Description=Run the ghapi collector every hour (full refresh once a day, backlog in between)
+
+[Timer]
+OnBootSec=5min
+OnCalendar=hourly
+RandomizedDelaySec=300
+Persistent=true
+Unit=ghapi-collector.service
+
+[Install]
+WantedBy=timers.target

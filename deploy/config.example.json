@@ -1,0 +1,18 @@
+{
+    "owners": ["dualfroz", "VulCodeCom", "aphrodipl", "thelunaticstudios", "Sinlege"],
+    "login": "dualfroz",
+    "name": "DualFroz",
+    "timezone": "Europe/Warsaw",
+    "stateDir": "/srv/ghapi/state",
+    "snapshotDir": "/srv/ghapi/snapshot",
+    "tmpDir": "/srv/ghapi/tmp",
+    "cacheDir": "/srv/ghapi/cache",
+    "tokeiBin": "/usr/local/bin/tokei",
+    "publicBaseUrl": "https://ghapi.dualfroz.com",
+    "apiKeys": [
+        { "label": "dualfroz.com", "sha256": "output of: bin/ghapi key dualfroz.com" }
+    ],
+    "discordUserId": "000000000000000000",
+    "discordApplicationId": "",
+    "discordPublicKey": ""
+}

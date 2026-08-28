@@ -1,0 +1,22 @@
+[Unit]
+Description=ghapi collector - sync commits from the GitHub API and rebuild snapshots
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=ghapi
+Group=ghapi
+EnvironmentFile=/etc/ghapi/github.env
+Environment=GHAPI_CONFIG=/etc/ghapi/config.json
+Environment=GHAPI_CONFIG_EXTRA=/etc/ghapi/collector.json
+ExecStart=/usr/bin/php /opt/projects/dualfroz/ghstats/bin/ghapi collect
+TimeoutStartSec=3h
+Nice=10
+IOSchedulingClass=idle
+UMask=0022
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/srv/ghapi
+PrivateTmp=true
+ProtectHome=true
