@@ -63,7 +63,13 @@ final class Tokei
 
     public function canonical(string $language): ?string
     {
-        $name = $this->aliases[$language] ?? $language;
+        $name = $language;
+        foreach ($this->aliases as $alias => $target) {
+            if (strcasecmp((string) $alias, $language) === 0) {
+                $name = (string) $target;
+                break;
+            }
+        }
         foreach ($this->denylist as $denied) {
             if (strcasecmp((string) $denied, $name) === 0) {
                 return null;

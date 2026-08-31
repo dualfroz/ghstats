@@ -33,6 +33,13 @@ foreach ($arguments as $argument) {
     }
 }
 
+if ($command === 'key') {
+    $label = $positional[0] ?? 'default';
+    $key = 'gha_' . bin2hex(random_bytes(24));
+    echo Json::encode(['label' => $label, 'key' => $key, 'configEntry' => ['label' => $label, 'sha256' => hash('sha256', $key)]], true), "\n";
+    exit(0);
+}
+
 $config = Config::load(isset($flags['config']) ? (string) $flags['config'] : null);
 $store = new StateStore($config->string('stateDir'));
 $tokei = new Tokei($config->string('tokeiBin'), $config->list('languageAliases'), $config->list('languageDenylist'));
@@ -73,12 +80,6 @@ try {
         case 'snapshot':
             $snapshot = (new SnapshotBuilder($config, $store))->build($store->load('meta') ?? []);
             echo Json::encode($snapshot['totals'], true), "\n";
-            exit(0);
-
-        case 'key':
-            $label = $positional[0] ?? 'default';
-            $key = 'gha_' . bin2hex(random_bytes(24));
-            echo Json::encode(['label' => $label, 'key' => $key, 'configEntry' => ['label' => $label, 'sha256' => hash('sha256', $key)]], true), "\n";
             exit(0);
 
         case 'discord:register':

@@ -128,6 +128,23 @@ final class Config
         return false;
     }
 
+    public function canonicalLanguage(string $language): ?string
+    {
+        $name = $language;
+        foreach ($this->list('languageAliases') as $alias => $target) {
+            if (strcasecmp((string) $alias, $language) === 0) {
+                $name = (string) $target;
+                break;
+            }
+        }
+        foreach ($this->list('languageDenylist') as $denied) {
+            if (strcasecmp((string) $denied, $name) === 0) {
+                return null;
+            }
+        }
+        return $name;
+    }
+
     public function isExcluded(string $nameWithOwner): bool
     {
         $lower = strtolower($nameWithOwner);

@@ -65,7 +65,7 @@ final class Cards
         $rows = [
             [$l->get('stats.commits'), $l->number($t['commits'])],
             [$l->get('stats.repos'), $l->number($t['repos'])],
-            [$l->get('stats.stars'), $l->number($t['stars'])],
+            [$l->get('stats.stars'), $l->number($t['stars'] + (int) ($this->s['opensource']['contributed']['stars'] ?? 0))],
             [$l->get('stats.languages'), $l->number($t['languages'])],
             [$l->get('stats.activeDays'), $l->number($t['activeDays'])],
             [$l->get('stats.linesWritten'), $l->number($t['linesNet'])],

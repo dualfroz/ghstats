@@ -295,7 +295,11 @@ final class SnapshotBuilder
             }
             if (is_array($tree) && is_array($tree['languages'] ?? null)) {
                 $row['codeLines'] = 0;
-                foreach ($tree['languages'] as $language => $stats) {
+                foreach ($tree['languages'] as $rawLanguage => $stats) {
+                    $language = $this->config->canonicalLanguage((string) $rawLanguage);
+                    if ($language === null) {
+                        continue;
+                    }
                     $treeLanguages[$language] ??= ['code' => 0, 'bytes' => 0, 'repos' => []];
                     $treeLanguages[$language]['code'] += (int) $stats['code'];
                     $treeLanguages[$language]['bytes'] += (int) $stats['bytes'];

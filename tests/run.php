@@ -94,6 +94,12 @@ foreach (['React', 'GSAP', 'Vitest', 'Gin', 'GORM', 'Tokio', 'Axum', 'ASP.NET Co
 }
 check('framework skips node_modules', !in_array('Next.js', $names, true));
 
+$aliasConfig = Config::fromArray([]);
+same('alias is case-insensitive', 'TypeScript', $aliasConfig->canonicalLanguage('TSX'));
+same('alias jsx', 'JavaScript', $aliasConfig->canonicalLanguage('JSX'));
+same('denylist', null, $aliasConfig->canonicalLanguage('json'));
+same('tokei alias', 'TypeScript', (new Ghapi\Collect\Tokei('tokei', ['Tsx' => 'TypeScript'], []))->canonical('TSX'));
+
 $keypair = sodium_crypto_sign_keypair();
 $secret = sodium_crypto_sign_secretkey($keypair);
 $publicHex = bin2hex(sodium_crypto_sign_publickey($keypair));
