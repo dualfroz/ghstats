@@ -45,7 +45,7 @@ per historical commit. The clones can be deleted afterwards.
 Everything under `/v2/public` is open, has CORS enabled and never contains private repository names. The same
 paths without `public/` need `Authorization: Bearer <key>` and add repository names and per-repository data.
 
-Common query parameters: `owner=<account>` narrows to one account or organization, `lang=en|pl` for labels,
+Common query parameters: `owner=<account>` narrows to one account or organization, `lang=pl|en` for labels (default `pl`),
 `pretty=1`. All responses send an `ETag` and answer `If-None-Match` with 304.
 
 | Path | What |
@@ -83,7 +83,8 @@ longer published.
 - Commits: author email in `authorEmails`, merges excluded, every branch. Repositories in `fullCountRepos`
   count every author. Forks never count.
 - `linesAdded` / `linesRemoved`: every file of those commits. `codeLinesAdded`: files with a known programming
-  language extension. `codeLinesLive` and `charsOfCode`: `tokei` on the current default branch.
+  language extension. `linesNet`: added minus removed. `charsOfCode`: bytes of source files on the current default
+  branch (`tokei`). No percentage or share is ever computed from the current tree, only from lines written.
 - Tests: files under `tests/`, `__tests__/`, `spec/`, `e2e/` and names like `*_test.go`, `*.spec.ts`,
   `FooTest.java`.
 - Open source `contributed`: merged pull requests to public repositories outside the configured owners.
@@ -93,8 +94,8 @@ longer published.
 
 A user-installable app, so it works in DMs, group chats and every server without adding a bot. Slash commands:
 `/help /summary /loc /commits /langs /oss /repo /compare /frameworks /sizes /tests`, each with `hidden` to
-answer only to you. The owner (`discordUserId`) gets private data, anyone else the public view. Replies follow
-the Discord client language (Polish or English).
+answer only to you and `lang` (Polish by default, English on request). The owner (`discordUserId`) gets private
+data, anyone else the public view.
 
 Setup in the Developer Portal:
 

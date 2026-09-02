@@ -72,10 +72,6 @@ final class Request
 
     public function lang(): string
     {
-        $lang = $this->choice('lang', ['pl', 'en'], '');
-        if ($lang !== '') {
-            return $lang;
-        }
-        return 'en';
+        return in_array(strtolower($this->string('lang')), ['en', 'eng', 'english'], true) ? 'en' : 'pl';
     }
 }

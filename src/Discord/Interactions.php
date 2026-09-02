@@ -41,7 +41,6 @@ final class Interactions
         }
         $userId = (string) ($interaction['member']['user']['id'] ?? $interaction['user']['id'] ?? '');
         $owner = $userId !== '' && hash_equals($this->config->string('discordUserId'), $userId);
-        $labels = Labels::of(str_starts_with((string) ($interaction['locale'] ?? 'en'), 'pl') ? 'pl' : 'en');
         $data = $interaction['data'] ?? [];
         $options = [];
         $focused = null;
@@ -51,6 +50,7 @@ final class Interactions
                 $focused = $option['name'];
             }
         }
+        $labels = Labels::of(($options['lang'] ?? 'pl') === 'en' ? 'en' : 'pl');
         if ($type === 4) {
             return Response::json(['type' => 8, 'data' => ['choices' => $this->autocomplete((string) ($data['name'] ?? ''), (string) $focused, (string) ($options[$focused] ?? ''), $owner)]]);
         }
@@ -123,7 +123,7 @@ final class Interactions
                     self::field($pl ? 'Seria' : 'Streak', $n($snapshot['streak']['current']) . ' / ' . $n($snapshot['streak']['longest'])),
                     self::field($pl ? 'Linie dodane' : 'Lines added', $n($t['linesAdded'])),
                     self::field($pl ? 'Linie usunięte' : 'Lines removed', $n($t['linesRemoved'])),
-                    self::field($pl ? 'Kod żyjący' : 'Living code', $n($t['codeLinesLive'])),
+                    self::field($pl ? 'Linie netto' : 'Net lines', $n($t['linesNet'])),
                     self::field($pl ? 'Repozytoria' : 'Repositories', $n($t['repos'])),
                     self::field($pl ? 'Języki' : 'Languages', $n($t['languages'])),
                     self::field($pl ? 'Frameworki' : 'Frameworks', $n($t['frameworks'])),
@@ -149,7 +149,7 @@ final class Interactions
                         self::field($pl ? 'Dodane' : 'Added', $n($loc['totals']['linesAdded'])),
                         self::field($pl ? 'Usunięte' : 'Removed', $n($loc['totals']['linesRemoved'])),
                         self::field($pl ? 'Netto' : 'Net', $n($loc['totals']['linesNet'])),
-                        self::field($pl ? 'Kod żyjący dziś' : 'Living code today', $n($loc['totals']['allTime']['codeLinesLive'])),
+                        self::field($pl ? 'Linie netto od zawsze' : 'Net lines all-time', $n($loc['totals']['allTime']['linesNet'])),
                         self::field($pl ? 'Znaki kodu' : 'Characters of code', $n($loc['totals']['allTime']['charsOfCode'])),
                         self::field($pl ? 'Commity sprzątające' : 'Clean-up commits', $n($loc['refactors']['commits'])),
                     ],
@@ -215,7 +215,7 @@ final class Interactions
                     'fields' => [
                         self::field($pl ? 'Commity' : 'Commits', $n($repo['commits'])),
                         self::field($pl ? 'Linie' : 'Lines', '+' . $n($repo['linesAdded']) . ' / -' . $n($repo['linesRemoved'])),
-                        self::field($pl ? 'Kod żyjący' : 'Living code', $repo['codeLines'] === null ? '-' : $n($repo['codeLines'])),
+                        self::field($pl ? 'Linie netto' : 'Net lines', $n($repo['linesAdded'] - $repo['linesRemoved'])),
                         self::field($pl ? 'Pierwszy commit' : 'First commit', substr((string) $repo['firstCommit'], 0, 10)),
                         self::field($pl ? 'Ostatni commit' : 'Last commit', substr((string) $repo['lastCommit'], 0, 10)),
                         self::field($pl ? 'Status' : 'Status', $l->get('status.' . $repo['status'])),

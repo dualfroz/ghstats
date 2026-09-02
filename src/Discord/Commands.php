@@ -23,12 +23,16 @@ final class Commands
             ['name' => 'last 30 days', 'name_localizations' => ['pl' => 'ostatnie 30 dni'], 'value' => '30d'],
         ]];
         $hidden = ['type' => self::BOOLEAN, 'name' => 'hidden', 'description' => 'Show the answer only to you', 'description_localizations' => ['pl' => 'Pokaż odpowiedź tylko Tobie'], 'required' => false];
+        $lang = ['type' => self::STRING, 'name' => 'lang', 'description' => 'Answer language, Polish by default', 'description_localizations' => ['pl' => 'Język odpowiedzi, domyślnie polski'], 'required' => false, 'choices' => [
+            ['name' => 'polski', 'value' => 'pl'],
+            ['name' => 'English', 'value' => 'en'],
+        ]];
         $command = static fn (string $name, string $en, string $pl, array $options = []): array => [
             'name' => $name,
             'type' => 1,
             'description' => $en,
             'description_localizations' => ['pl' => $pl],
-            'options' => array_merge($options, [$hidden]),
+            'options' => array_merge($options, [$lang, $hidden]),
             'integration_types' => [1],
             'contexts' => [0, 1, 2],
         ];

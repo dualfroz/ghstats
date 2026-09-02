@@ -200,6 +200,11 @@ check('strip removes repos', !isset($stripped['repos']));
 same('commits by month', [['period' => '2026-09', 'commits' => 3, 'linesAdded' => 7, 'linesRemoved' => 3, 'activeDays' => 2]], Views::commits($snapshot, 'month', 'all', $labels)['series']);
 $compat = Compat::stats($snapshot);
 same('compat commits', 3, $compat['ownCommits']);
+same('compat codeLines is net', $compat['languages'][0]['lines'] - 3, $compat['languages'][0]['codeLines']);
+check('no living code in totals', !array_key_exists('codeLinesLive', $snapshot['totals']));
+$plRequest = new Ghapi\Http\Request('GET', '/v2/public/summary', [], [], '');
+same('lang defaults to pl', 'pl', $plRequest->lang());
+same('lang eng', 'en', (new Ghapi\Http\Request('GET', '/', ['lang' => 'eng'], [], ''))->lang());
 same('compat last year window', 371, count($compat['commitsLastYear']['days']));
 foreach (Cards::NAMES as $card) {
     libxml_use_internal_errors(true);

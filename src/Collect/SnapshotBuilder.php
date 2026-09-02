@@ -170,7 +170,6 @@ final class SnapshotBuilder
                 'lifetimeDays' => 0,
                 'status' => 'inactive',
                 'languages' => [],
-                'codeLines' => null,
                 'frameworks' => [],
                 'pendingDetails' => 0,
                 'months' => [],
@@ -294,7 +293,6 @@ final class SnapshotBuilder
                 }
             }
             if (is_array($tree) && is_array($tree['languages'] ?? null)) {
-                $row['codeLines'] = 0;
                 foreach ($tree['languages'] as $rawLanguage => $stats) {
                     $language = $this->config->canonicalLanguage((string) $rawLanguage);
                     if ($language === null) {
@@ -306,7 +304,6 @@ final class SnapshotBuilder
                     if ((int) $stats['code'] > 0) {
                         $treeLanguages[$language]['repos'][$name] = true;
                     }
-                    $row['codeLines'] += (int) $stats['code'];
                 }
             } elseif (!empty($info['githubLanguages'])) {
                 foreach ($info['githubLanguages'] as $language) {
@@ -334,16 +331,14 @@ final class SnapshotBuilder
                 'repos' => count($entry['repos']),
                 'firstYear' => $entry['firstYear'],
                 'lastYear' => $entry['lastYear'],
-                'codeLines' => (int) ($treeLanguages[$language]['code'] ?? 0),
                 'bytes' => (int) ($treeLanguages[$language]['bytes'] ?? 0),
-                'projects' => count($treeLanguages[$language]['repos'] ?? []) ?: count($entry['repos']),
+                'projects' => count($entry['repos']),
                 'testLinesAdded' => $entry['testAdded'],
                 'codeLinesAdded' => $entry['codeAdded'],
             ];
         }
         usort($languageRows, static fn (array $a, array $b): int => [$b['linesAdded'], $a['name']] <=> [$a['linesAdded'], $b['name']]);
 
-        $codeLinesLive = array_sum(array_map(static fn (array $l): int => $l['code'], $treeLanguages));
         $bytesLive = array_sum(array_map(static fn (array $l): int => $l['bytes'], $treeLanguages));
         $frameworkRows = array_values(array_map(static function (array $framework): array {
             sort($framework['repoNames'], SORT_STRING | SORT_FLAG_CASE);
@@ -381,7 +376,6 @@ final class SnapshotBuilder
                 'linesRemoved' => $totals['linesRemoved'],
                 'linesNet' => $totals['linesAdded'] - $totals['linesRemoved'],
                 'codeLinesAdded' => $totalAddedByLanguage,
-                'codeLinesLive' => $codeLinesLive,
                 'charsOfCode' => $bytesLive,
                 'languages' => count($languageRows),
                 'repos' => count($repoRows),

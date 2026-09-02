@@ -40,7 +40,7 @@ final class Compat
                 'lines' => $language['linesAdded'],
                 'share' => $language['share'],
                 'color' => $language['color'],
-                'codeLines' => $language['codeLines'],
+                'codeLines' => $language['linesNet'],
                 'projects' => $language['projects'],
             ];
             $volume = sqrt($language['linesAdded'] / $maxLines);

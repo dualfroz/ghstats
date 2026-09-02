@@ -136,7 +136,7 @@ final class Views
                     'linesAdded' => $s['totals']['linesAdded'],
                     'linesRemoved' => $s['totals']['linesRemoved'],
                     'codeLinesAdded' => $s['totals']['codeLinesAdded'],
-                    'codeLinesLive' => $s['totals']['codeLinesLive'],
+                    'linesNet' => $s['totals']['linesNet'],
                     'charsOfCode' => $s['totals']['charsOfCode'],
                     'longestCommitChurn' => $s['totals']['longestCommitChurn'],
                 ],
@@ -156,7 +156,7 @@ final class Views
             'scope' => $s['scope'],
             'generatedAt' => $s['generatedAt'],
             'total' => count($s['languages']),
-            'totals' => ['codeLinesAdded' => $s['totals']['codeLinesAdded'], 'codeLinesLive' => $s['totals']['codeLinesLive'], 'charsOfCode' => $s['totals']['charsOfCode']],
+            'totals' => ['codeLinesAdded' => $s['totals']['codeLinesAdded'], 'linesNet' => $s['totals']['linesNet'], 'charsOfCode' => $s['totals']['charsOfCode']],
             'languages' => array_slice($s['languages'], 0, $limit),
         ];
     }

@@ -22,7 +22,7 @@ final class Notifier
             ['Commity', 'commits'],
             ['Linie dodane', 'linesAdded'],
             ['Linie usunięte', 'linesRemoved'],
-            ['Kod żyjący', 'codeLinesLive'],
+            ['Linie netto', 'linesNet'],
             ['Repozytoria', 'repos'],
             ['Języki', 'languages'],
         ];
