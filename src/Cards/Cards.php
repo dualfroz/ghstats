@@ -56,6 +56,12 @@ final class Cards
         return $this->displayName !== null && $this->displayName !== '' ? $this->displayName : ($this->s['identity']['name'] ?? 'GitHub');
     }
 
+    private function personal(): bool
+    {
+        $scope = (string) ($this->s['scope'] ?? 'all');
+        return $scope === 'all' || $scope === 'owner-' . strtolower((string) ($this->s['identity']['login'] ?? ''));
+    }
+
     private function stats(): string
     {
         $t = $this->s['totals'];
@@ -65,7 +71,9 @@ final class Cards
         $rows = [
             [$l->get('stats.commits'), $l->number($t['commits'])],
             [$l->get('stats.repos'), $l->number($t['repos'])],
-            [$l->get('stats.stars'), $l->number($t['stars'] + (int) ($this->s['opensource']['contributed']['stars'] ?? 0))],
+            $this->personal()
+                ? [$l->get('stats.stars'), $l->number($t['stars'] + (int) ($this->s['opensource']['contributed']['stars'] ?? 0))]
+                : [$l->get('stats.starsOwn'), $l->number($t['stars'])],
             [$l->get('stats.languages'), $l->number($t['languages'])],
             [$l->get('stats.activeDays'), $l->number($t['activeDays'])],
             [$l->get('stats.linesWritten'), $l->number($t['linesNet'])],

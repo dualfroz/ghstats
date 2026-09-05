@@ -66,7 +66,9 @@ final class ProfileCard
         if ($this->state['banner'] !== null) {
             return '<image href="' . $this->state['banner'] . '" x="0" y="0" width="' . self::W . '" height="' . self::BANNER_H . '" preserveAspectRatio="xMidYMid slice" clip-path="url(#dcard)"/>';
         }
-        if (str_starts_with($this->bannerConfig, '#')) {
+        if (($this->state['accentColor'] ?? null) !== null) {
+            $fill = $this->state['accentColor'];
+        } elseif (str_starts_with($this->bannerConfig, '#') && !str_contains($this->bannerConfig, ',')) {
             $fill = $this->bannerConfig;
         } elseif (str_contains($this->bannerConfig, ',') && !str_starts_with($this->bannerConfig, 'http')) {
             [$from, $to] = array_map('trim', explode(',', $this->bannerConfig, 2));

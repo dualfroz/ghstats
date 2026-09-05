@@ -69,7 +69,7 @@ Common query parameters: `owner=<account>` narrows to one account or organizatio
 | `meta` | private only: collector run, rate limits, errors |
 | `cards/{name}.svg` | `stats`, `top-langs`, `streak`, `activity`, `heatmap`, `loc`, `by-year`, `top-repos`, `punchcard`, `achievements`, `opensource`, `frameworks`, `hours`, `discord`; `theme=tokyonight\|light`, `hide_border`, `range=all`, `name=` |
 
-`POST /v2/discord/interactions` is the Discord interactions endpoint.
+`POST /v2/discord/interactions` is the Discord interactions endpoint. The `discord` card reads the profile and presence that the VulCode server bot (discordv2) writes to `discordProfileFile`; bio, pronouns and Nitro badges come from the config because Discord does not expose them to bots.
 
 ### Compatibility
 

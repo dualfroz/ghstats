@@ -8,7 +8,7 @@ use Ghapi\Cards\Cards;
 use Ghapi\Cards\Theme;
 use Ghapi\Config;
 use Ghapi\Discord\Interactions;
-use Ghapi\Discord\Lanyard;
+use Ghapi\Discord\ProfileFeed;
 use Ghapi\Discord\ProfileCard;
 use Ghapi\Support\Labels;
 
@@ -171,8 +171,8 @@ final class App
 
     private function discordCard(Request $request): Response
     {
-        $lanyard = new Lanyard($this->config->string('discordUserId'), $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache', $this->config->string('lanyardBanner'));
-        $state = $lanyard->state();
+        $feed = new ProfileFeed($this->config->string('discordProfileFile'), $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache');
+        $state = $feed->state();
         $hideBorder = $request->flag('hide_border');
         $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null]) ?: '');
         $etag = 'W/"discord-' . substr($token, 0, 16) . '"';
@@ -180,7 +180,7 @@ final class App
         if ($request->header('if-none-match') === $etag) {
             return new Response(304, $headers, '');
         }
-        $card = new ProfileCard($state, $this->config->string('lanyardBanner'), $this->config->string('lanyardPronouns'), $this->config->string('lanyardBio'), $this->config->list('lanyardBadges'), $this->rootDir . '/assets/badges');
+        $card = new ProfileCard($state, $this->config->string('discordBanner'), $this->config->string('discordPronouns'), $this->config->string('discordBio'), $this->config->list('discordBadges'), $this->rootDir . '/assets/badges');
         $response = Response::svg($card->render($hideBorder));
         $response->headers += $headers;
         return $response;
