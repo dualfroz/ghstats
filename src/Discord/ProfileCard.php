@@ -20,7 +20,14 @@ final class ProfileCard
     private const AV_CX = 56;
     private const AV_CY = 100;
     private const AV_R = 44;
-    private const BADGE_FILES = ['nitro' => 'nitro.svg', 'boost' => 'boost.svg', 'quest' => 'quest.png', 'orb' => 'orb.svg', 'legacy' => 'legacy.png'];
+    private const FLAG_BADGES = [
+        64 => 'hypesquad-bravery', 128 => 'hypesquad-brilliance', 256 => 'hypesquad-balance', 512 => 'early-supporter', 4194304 => 'active-developer',
+    ];
+    private const DISCORD_MARK = 'M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z';
+    private const LABELS = [
+        'pl' => ['about' => 'O MNIE', 'since' => 'CZŁONEK OD', 'spotify' => 'Słucha Spotify', 'by' => 'wykonawca: ', 'on' => 'album: ', 'playing' => 'GRA W', 'cached' => ' (z pamięci)', 'online' => 'Dostępny', 'idle' => 'Zaraz wracam', 'dnd' => 'Nie przeszkadzać', 'offline' => 'Niedostępny', 'months' => ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru']],
+        'en' => ['about' => 'ABOUT ME', 'since' => 'MEMBER SINCE', 'spotify' => 'Listening to Spotify', 'by' => 'by ', 'on' => 'on ', 'playing' => 'PLAYING A GAME', 'cached' => ' (cached)', 'online' => 'Online', 'idle' => 'Idle', 'dnd' => 'Do Not Disturb', 'offline' => 'Offline', 'months' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']],
+    ];
 
     private string $defs = '';
 
@@ -31,6 +38,7 @@ final class ProfileCard
         private readonly string $bio,
         private readonly array $badges,
         private readonly string $assetsDir,
+        private readonly string $lang = 'pl',
     ) {
     }
 
@@ -47,6 +55,7 @@ final class ProfileCard
         $body .= $this->badgeBox();
         $y = $usernameY + 20;
         $y = $this->bioBlock($body, $y);
+        $y = $this->memberSince($body, $y);
         $y = $this->activity($body, $y);
         $height = $y + 16;
 
@@ -87,12 +96,24 @@ final class ProfileCard
 
     private function badgeBox(): string
     {
+        $keys = [];
+        foreach (self::FLAG_BADGES as $flag => $key) {
+            if (((int) ($this->state['publicFlags'] ?? 0) & $flag) === $flag) {
+                $keys[] = $key;
+            }
+        }
+        $keys = array_values(array_unique(array_merge($keys, array_map(static fn ($key): string => strtolower((string) $key), $this->badges))));
         $glyphs = [];
-        foreach ($this->badges as $key) {
-            $file = self::BADGE_FILES[strtolower((string) $key)] ?? null;
-            if ($file !== null && is_file($this->assetsDir . '/' . $file)) {
-                $mime = str_ends_with($file, '.svg') ? 'image/svg+xml' : 'image/png';
-                $glyphs[] = 'data:' . $mime . ';base64,' . base64_encode((string) file_get_contents($this->assetsDir . '/' . $file));
+        foreach ($keys as $key) {
+            if (!preg_match('/^[a-z0-9-]+$/', $key)) {
+                continue;
+            }
+            foreach (['svg' => 'image/svg+xml', 'png' => 'image/png'] as $extension => $mime) {
+                $file = $this->assetsDir . '/' . $key . '.' . $extension;
+                if (is_file($file)) {
+                    $glyphs[] = 'data:' . $mime . ';base64,' . base64_encode((string) file_get_contents($file));
+                    break;
+                }
             }
         }
         if ($glyphs === []) {
@@ -164,7 +185,7 @@ final class ProfileCard
             return $y;
         }
         $top = $y + 14;
-        $body .= $this->sectionLabel(20, $top, 'ABOUT ME');
+        $body .= $this->sectionLabel(20, $top, $this->label('about'));
         $lineY = $top + 18;
         foreach (array_slice(explode("\n", wordwrap($this->bio, 60, "\n", true)), 0, 4) as $line) {
             $body .= Svg::text(20, $lineY, self::TEXT2, 13, 400, $line);
@@ -209,10 +230,10 @@ final class ProfileCard
         $gy = $top + 22;
         $body .= '<g><circle cx="' . $gx . '" cy="' . $gy . '" r="7" fill="' . self::SPOTIFY . '"/>'
             . self::arc($gx, $gy - 1.2, 4.2, 1.6) . self::arc($gx, $gy + 0.9, 3.2, 1.5) . self::arc($gx, $gy + 2.8, 2.2, 1.3) . '</g>';
-        $body .= Svg::text($textX + 20, $top + 26, self::SPOTIFY, 12, 700, 'Listening to Spotify');
+        $body .= Svg::text($textX + 20, $top + 26, self::SPOTIFY, 12, 700, $this->label('spotify'));
         $body .= Svg::text($textX, $top + 48, self::TEXT, 15, 700, self::cut($spotify['song'], 26));
-        $body .= Svg::text($textX, $top + 66, self::MUTED, 12, 400, 'by ' . self::cut($spotify['artist'], 30));
-        $body .= Svg::text($textX, $top + 82, self::MUTED, 12, 400, 'on ' . self::cut($spotify['album'], 30));
+        $body .= Svg::text($textX, $top + 66, self::MUTED, 12, 400, $this->label('by') . self::cut($spotify['artist'], 30));
+        $body .= Svg::text($textX, $top + 82, self::MUTED, 12, 400, $this->label('on') . self::cut($spotify['album'], 30));
         $total = $spotify['end'] - $spotify['start'];
         $elapsed = max(0, min($total, (int) (microtime(true) * 1000) - $spotify['start']));
         $barRight = $panX + $panW - 16;
@@ -244,7 +265,7 @@ final class ProfileCard
         $body .= '<rect x="' . $tileX . '" y="' . $tileY . '" width="52" height="52" rx="8" fill="#2b2d31"/>'
             . '<g fill="none" stroke="' . self::MUTED . '" stroke-width="2" stroke-linecap="round"><rect x="' . ($cx - 13) . '" y="' . ($cy - 7) . '" width="26" height="14" rx="7"/><line x1="' . ($cx - 7) . '" y1="' . ($cy - 1) . '" x2="' . ($cx - 7) . '" y2="' . ($cy + 3) . '"/><line x1="' . ($cx - 9) . '" y1="' . ($cy + 1) . '" x2="' . ($cx - 5) . '" y2="' . ($cy + 1) . '"/><circle cx="' . ($cx + 6) . '" cy="' . $cy . '" r="1.6" fill="' . self::MUTED . '" stroke="none"/></g>';
         $textX = $tileX + 66;
-        $body .= $this->sectionLabel($textX, $top + 20, 'PLAYING A GAME');
+        $body .= $this->sectionLabel($textX, $top + 20, $this->label('playing'));
         $lineY = $top + 40;
         $body .= Svg::text($textX, $lineY, self::TEXT, 14, 700, self::cut($playing['name'], 32));
         foreach ([$hasDetails ? $playing['details'] : null, $hasState ? $playing['state'] : null] as $line) {
@@ -259,9 +280,9 @@ final class ProfileCard
     private function statusPanel(string &$body, int $top): int
     {
         $s = $this->state;
-        $label = $s['customStatus'] ?? ($s['present'] ? self::statusLabel($s['status']) : 'Discord');
+        $label = $s['customStatus'] ?? ($s['present'] ? $this->label(in_array($s['status'], ['online', 'idle', 'dnd'], true) ? $s['status'] : 'offline') : 'Discord');
         if ($s['stale']) {
-            $label .= ' (cached)';
+            $label .= $this->label('cached');
         }
         $body .= $this->panel(16, $top, self::W - 32, 46);
         $body .= '<circle cx="40" cy="' . ($top + 23) . '" r="6" fill="' . self::statusColor($s['status']) . '"/>';
@@ -272,6 +293,51 @@ final class ProfileCard
     private function panel(int $x, int $y, int $w, int $h): string
     {
         return '<rect x="' . $x . '" y="' . $y . '" width="' . $w . '" height="' . $h . '" rx="10" fill="' . self::PANEL_BG . '" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>';
+    }
+
+    private function label(string $key): string
+    {
+        return (self::LABELS[$this->lang] ?? self::LABELS['pl'])[$key];
+    }
+
+    private function date(?int $timestamp): string
+    {
+        if ($timestamp === null || $timestamp <= 0) {
+            return '';
+        }
+        $month = (self::LABELS[$this->lang] ?? self::LABELS['pl'])['months'][(int) gmdate('n', $timestamp) - 1];
+        return $this->lang === 'en'
+            ? $month . ' ' . gmdate('j', $timestamp) . ', ' . gmdate('Y', $timestamp)
+            : gmdate('j', $timestamp) . ' ' . $month . ' ' . gmdate('Y', $timestamp);
+    }
+
+    private function memberSince(string &$body, int $y): int
+    {
+        $created = $this->state['createdAt'] ?? null;
+        $joined = $this->state['joinedAt'] ?? null;
+        if ($created === null && $joined === null) {
+            return $y;
+        }
+        $top = $y + 16;
+        $body .= $this->sectionLabel(20, $top, $this->label('since'));
+        $x = 20;
+        $row = $top + 20;
+        if ($created !== null) {
+            $body .= '<svg x="' . $x . '" y="' . ($row - 12) . '" width="16" height="16" viewBox="0 0 24 24"><path d="' . self::DISCORD_MARK . '" fill="' . self::MUTED . '"/></svg>';
+            $text = $this->date((int) $created);
+            $body .= Svg::text($x + 22, $row + 1, self::TEXT2, 13, 400, $text);
+            $x += 22 + (int) (Svg::length($text) * 7.2) + 18;
+        }
+        if ($joined !== null) {
+            if (($this->state['guildIcon'] ?? null) !== null) {
+                $body .= '<clipPath id="dguild"><circle cx="' . ($x + 8) . '" cy="' . ($row - 4) . '" r="8"/></clipPath>';
+                $body .= '<image href="' . $this->state['guildIcon'] . '" x="' . $x . '" y="' . ($row - 12) . '" width="16" height="16" clip-path="url(#dguild)"/>';
+            } else {
+                $body .= '<circle cx="' . ($x + 8) . '" cy="' . ($row - 4) . '" r="8" fill="#5865f2"/>';
+            }
+            $body .= Svg::text($x + 22, $row + 1, self::TEXT2, 13, 400, $this->date((int) $joined));
+        }
+        return $row + 4;
     }
 
     private function sectionLabel(int $x, int $y, string $text): string
@@ -302,16 +368,6 @@ final class ProfileCard
             'idle' => '#f0b232',
             'dnd' => '#f23f43',
             default => '#80848e',
-        };
-    }
-
-    private static function statusLabel(string $status): string
-    {
-        return match ($status) {
-            'online' => 'Online',
-            'idle' => 'Idle',
-            'dnd' => 'Do Not Disturb',
-            default => 'Offline',
         };
     }
 }

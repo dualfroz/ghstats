@@ -65,11 +65,23 @@ final class ProfileFeed
             'avatar' => $this->image($feed['avatar'] ?? null),
             'banner' => $this->image($feed['banner'] ?? null),
             'accentColor' => isset($feed['accentColor']) ? sprintf('#%06x', (int) $feed['accentColor']) : null,
+            'publicFlags' => (int) ($feed['publicFlags'] ?? 0),
+            'createdAt' => self::snowflakeTime((string) ($feed['userId'] ?? '')),
+            'joinedAt' => isset($feed['joinedAt']) ? (strtotime((string) $feed['joinedAt']) ?: null) : null,
+            'guildIcon' => $this->image($feed['guildIcon'] ?? null),
             'spotify' => $spotify,
             'playing' => $spotify === null ? $playing : null,
             'customStatus' => $customStatus,
             'fetchedAt' => (int) ($feed['updatedAt'] ?? 0),
         ];
+    }
+
+    public static function snowflakeTime(string $id): ?int
+    {
+        if (!ctype_digit($id) || strlen($id) < 15) {
+            return null;
+        }
+        return intdiv(intdiv((int) $id, 4194304) + 1420070400000, 1000);
     }
 
     public static function absent(): array
@@ -87,7 +99,7 @@ final class ProfileFeed
             return null;
         }
         $url = str_replace('/ab67616d0000b273', '/ab67616d00001e02', $url);
-        $url = preg_replace('#([?&]size=)\d+#', '${1}' . (str_contains($url, '/banners/') ? '512' : '128'), $url) ?? $url;
+        $url = preg_replace('#([?&]size=)\d+#', '${1}' . (str_contains($url, '/banners/') ? '512' : (str_contains($url, '/icons/') || str_contains($url, '/guild-tag-badges/') ? '32' : '128')), $url) ?? $url;
         $file = $this->cacheDir . '/img-' . substr(hash('sha256', $url), 0, 32) . '.txt';
         if (is_file($file)) {
             $age = time() - (int) filemtime($file);

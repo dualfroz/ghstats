@@ -174,13 +174,13 @@ final class App
         $feed = new ProfileFeed($this->config->string('discordProfileFile'), $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache');
         $state = $feed->state();
         $hideBorder = $request->flag('hide_border');
-        $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null]) ?: '');
+        $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null, $request->lang(), $state['joinedAt'] ?? null]) ?: '');
         $etag = 'W/"discord-' . substr($token, 0, 16) . '"';
         $headers = ['ETag' => $etag, 'Cache-Control' => 'public, max-age=25'];
         if ($request->header('if-none-match') === $etag) {
             return new Response(304, $headers, '');
         }
-        $card = new ProfileCard($state, $this->config->string('discordBanner'), $this->config->string('discordPronouns'), $this->config->string('discordBio'), $this->config->list('discordBadges'), $this->rootDir . '/assets/badges');
+        $card = new ProfileCard($state, $this->config->string('discordBanner'), $this->config->string('discordPronouns'), $this->config->string('discordBio'), $this->config->list('discordBadges'), $this->rootDir . '/assets/badges', $request->lang());
         $response = Response::svg($card->render($hideBorder));
         $response->headers += $headers;
         return $response;
