@@ -76,7 +76,7 @@ final class Cards
                 : [$l->get('stats.starsOwn'), $l->number($t['stars'])],
             [$l->get('stats.languages'), $l->number($t['languages'])],
             [$l->get('stats.activeDays'), $l->number($t['activeDays'])],
-            [$l->get('stats.linesWritten'), $l->number($t['linesNet'])],
+            [$l->get('stats.linesWritten'), $l->number($t['lines'])],
         ];
         $body = Svg::title(25, 37, $this->theme, $title) . Svg::divider($width, 50, $this->theme);
         foreach ($rows as $index => [$label, $value]) {
@@ -345,7 +345,7 @@ final class Cards
         $t = $this->s['totals'];
         $l = $this->labels;
         $body = Svg::title(25, 34, $this->theme, $l->get('loc.title')) . Svg::divider($width, 46, $this->theme);
-        $body .= Svg::text($width / 2, 104, $this->theme->title, 42, 700, $l->number($t['linesNet']), 'middle');
+        $body .= Svg::text($width / 2, 104, $this->theme->title, 42, 700, $l->number($t['lines']), 'middle');
         $body .= Svg::text($width / 2, 128, $this->theme->muted, 12, 400, $l->get('loc.caption'), 'middle');
         $added = $t['linesAdded'];
         $removed = $t['linesRemoved'];
@@ -474,7 +474,7 @@ final class Cards
             [$l->number($t['repos']), $l->get('achievements.repos')],
             [(string) $t['languages'], $l->get('achievements.languages')],
             [(string) $this->s['streak']['longest'], $l->get('achievements.streak')],
-            [$l->compact($t['codeLinesAdded']), $l->get('achievements.lines')],
+            [$l->compact($t['lines']), $l->get('achievements.lines')],
         ];
         if ($t['languages'] >= 10) {
             $badges[] = ['Polyglot', $l->get('achievements.polyglot')];

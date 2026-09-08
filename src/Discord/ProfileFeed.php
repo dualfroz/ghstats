@@ -67,8 +67,6 @@ final class ProfileFeed
             'accentColor' => isset($feed['accentColor']) ? sprintf('#%06x', (int) $feed['accentColor']) : null,
             'publicFlags' => (int) ($feed['publicFlags'] ?? 0),
             'createdAt' => self::snowflakeTime((string) ($feed['userId'] ?? '')),
-            'joinedAt' => isset($feed['joinedAt']) ? (strtotime((string) $feed['joinedAt']) ?: null) : null,
-            'guildIcon' => $this->image($feed['guildIcon'] ?? null),
             'spotify' => $spotify,
             'playing' => $spotify === null ? $playing : null,
             'customStatus' => $customStatus,

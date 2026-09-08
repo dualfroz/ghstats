@@ -174,7 +174,7 @@ final class App
         $feed = new ProfileFeed($this->config->string('discordProfileFile'), $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache');
         $state = $feed->state();
         $hideBorder = $request->flag('hide_border');
-        $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null, $request->lang(), $state['joinedAt'] ?? null]) ?: '');
+        $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null, $request->lang()]) ?: '');
         $etag = 'W/"discord-' . substr($token, 0, 16) . '"';
         $headers = ['ETag' => $etag, 'Cache-Control' => 'public, max-age=25'];
         if ($request->header('if-none-match') === $etag) {
@@ -227,7 +227,7 @@ final class App
             'commits/size' => 'commit size distribution, median, p90, largest commits',
             'streak' => 'current and longest streak',
             'loc?group=year|month|week|day&range=' => 'lines added and removed, clean-up commits, file kinds',
-            'languages?limit=' => 'languages by lines written, living code, first year',
+            'languages?limit=' => 'languages by lines of code written (tests included), share, first year',
             'frameworks?ecosystem=' => 'frameworks detected from manifests',
             'tests' => 'test code against the rest',
             'compare?period=week|month' => 'current period against the previous one',

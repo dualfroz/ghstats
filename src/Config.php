@@ -54,7 +54,7 @@ final class Config
         'discordBio' => '',
         'discordPronouns' => 'Strange(r)',
         'discordBanner' => '#5865f2,#404eed',
-        'discordBadges' => ['nitro-opal', 'boost-24', 'gifting-luminary', 'legacy', 'quest', 'orb'],
+        'discordBadges' => ['nitro-ruby', 'boost-12', 'gifting-luminary', 'legacy', 'quest', 'orb'],
         'apiKeys' => [],
         'publicBaseUrl' => 'https://ghapi.dualfroz.com',
         'cacheSeconds' => 1800,

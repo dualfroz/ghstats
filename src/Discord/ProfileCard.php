@@ -314,29 +314,15 @@ final class ProfileCard
     private function memberSince(string &$body, int $y): int
     {
         $created = $this->state['createdAt'] ?? null;
-        $joined = $this->state['joinedAt'] ?? null;
-        if ($created === null && $joined === null) {
+        if ($created === null) {
             return $y;
         }
         $top = $y + 16;
         $body .= $this->sectionLabel(20, $top, $this->label('since'));
         $x = 20;
         $row = $top + 20;
-        if ($created !== null) {
-            $body .= '<svg x="' . $x . '" y="' . ($row - 12) . '" width="16" height="16" viewBox="0 0 24 24"><path d="' . self::DISCORD_MARK . '" fill="' . self::MUTED . '"/></svg>';
-            $text = $this->date((int) $created);
-            $body .= Svg::text($x + 22, $row + 1, self::TEXT2, 13, 400, $text);
-            $x += 22 + (int) (Svg::length($text) * 7.2) + 18;
-        }
-        if ($joined !== null) {
-            if (($this->state['guildIcon'] ?? null) !== null) {
-                $body .= '<clipPath id="dguild"><circle cx="' . ($x + 8) . '" cy="' . ($row - 4) . '" r="8"/></clipPath>';
-                $body .= '<image href="' . $this->state['guildIcon'] . '" x="' . $x . '" y="' . ($row - 12) . '" width="16" height="16" clip-path="url(#dguild)"/>';
-            } else {
-                $body .= '<circle cx="' . ($x + 8) . '" cy="' . ($row - 4) . '" r="8" fill="#5865f2"/>';
-            }
-            $body .= Svg::text($x + 22, $row + 1, self::TEXT2, 13, 400, $this->date((int) $joined));
-        }
+        $body .= '<svg x="' . $x . '" y="' . ($row - 12) . '" width="16" height="16" viewBox="0 0 24 24"><path d="' . self::DISCORD_MARK . '" fill="' . self::MUTED . '"/></svg>';
+        $body .= Svg::text($x + 22, $row + 1, self::TEXT2, 13, 400, $this->date((int) $created));
         return $row + 4;
     }
 

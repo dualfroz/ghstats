@@ -130,13 +130,11 @@ final class Views
             'totals' => [
                 'linesAdded' => $added,
                 'linesRemoved' => $removed,
-                'linesNet' => $added - $removed,
                 'removedToAdded' => $added > 0 ? round($removed / $added, 4) : 0.0,
                 'allTime' => [
                     'linesAdded' => $s['totals']['linesAdded'],
                     'linesRemoved' => $s['totals']['linesRemoved'],
-                    'codeLinesAdded' => $s['totals']['codeLinesAdded'],
-                    'linesNet' => $s['totals']['linesNet'],
+                    'lines' => $s['totals']['lines'],
                     'charsOfCode' => $s['totals']['charsOfCode'],
                     'longestCommitChurn' => $s['totals']['longestCommitChurn'],
                 ],
@@ -144,8 +142,8 @@ final class Views
             'refactors' => $s['sizes']['refactors'],
             'kinds' => $kinds,
             'series' => array_map(static fn (array $row): array => [
-                'period' => $row['period'], 'linesAdded' => $row['linesAdded'], 'linesRemoved' => $row['linesRemoved'],
-                'linesNet' => $row['linesAdded'] - $row['linesRemoved'], 'commits' => $row['commits'],
+                'period' => $row['period'], 'linesAdded' => $row['linesAdded'],
+                'linesRemoved' => $row['linesRemoved'], 'commits' => $row['commits'],
             ], $commits['series']),
         ];
     }
@@ -156,7 +154,7 @@ final class Views
             'scope' => $s['scope'],
             'generatedAt' => $s['generatedAt'],
             'total' => count($s['languages']),
-            'totals' => ['codeLinesAdded' => $s['totals']['codeLinesAdded'], 'linesNet' => $s['totals']['linesNet'], 'charsOfCode' => $s['totals']['charsOfCode']],
+            'totals' => ['lines' => $s['totals']['lines'], 'charsOfCode' => $s['totals']['charsOfCode']],
             'languages' => array_slice($s['languages'], 0, $limit),
         ];
     }

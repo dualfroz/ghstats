@@ -40,7 +40,7 @@ final class Compat
                 'lines' => $language['linesAdded'],
                 'share' => $language['share'],
                 'color' => $language['color'],
-                'codeLines' => $language['linesNet'],
+                'codeLines' => $language['lines'],
                 'projects' => $language['projects'],
             ];
             $volume = sqrt($language['linesAdded'] / $maxLines);
@@ -53,7 +53,7 @@ final class Compat
         }
 
         return [
-            'locTotal' => $s['totals']['codeLinesAdded'],
+            'locTotal' => $s['totals']['lines'],
             'charsOfCode' => $s['totals']['charsOfCode'],
             'ownCommits' => $s['totals']['commits'],
             'reposOwn' => $s['totals']['repos'],

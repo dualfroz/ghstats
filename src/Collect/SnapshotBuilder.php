@@ -13,7 +13,7 @@ use Ghapi\Support\LanguageColors;
 
 final class SnapshotBuilder
 {
-    public const SCHEMA = 2;
+    public const SCHEMA = 3;
     public const RANGES = ['all' => null, '365d' => 365, '90d' => 90, '30d' => 30];
 
     private const ROLE_SUFFIXES = [
@@ -325,7 +325,7 @@ final class SnapshotBuilder
                 'color' => LanguageColors::for($language),
                 'linesAdded' => $entry['added'],
                 'linesRemoved' => $entry['removed'],
-                'linesNet' => $entry['added'] - $entry['removed'],
+                'lines' => $entry['added'],
                 'share' => $totalAddedByLanguage > 0 ? $entry['added'] / $totalAddedByLanguage : 0.0,
                 'commits' => $entry['commits'],
                 'repos' => count($entry['repos']),
@@ -374,8 +374,7 @@ final class SnapshotBuilder
                 'activeDays' => count($activeDates),
                 'linesAdded' => $totals['linesAdded'],
                 'linesRemoved' => $totals['linesRemoved'],
-                'linesNet' => $totals['linesAdded'] - $totals['linesRemoved'],
-                'codeLinesAdded' => $totalAddedByLanguage,
+                'lines' => $totalAddedByLanguage,
                 'charsOfCode' => $bytesLive,
                 'languages' => count($languageRows),
                 'repos' => count($repoRows),

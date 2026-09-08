@@ -39,7 +39,7 @@ final class Commands
         return [
             $command('help', 'What this app can answer', 'Co ta aplikacja potrafi', []),
             $command('summary', 'All the numbers in one place', 'Wszystkie liczby w jednym miejscu', [$owner]),
-            $command('loc', 'Lines added, removed and living code', 'Linie dodane, usunięte i kod żyjący', [$range, $owner]),
+            $command('loc', 'Lines of code written, added and removed', 'Linie kodu napisane, dodane i usunięte', [$range, $owner]),
             $command('commits', 'Commit counts by period or hour', 'Commity według okresu albo godziny', [
                 ['type' => self::STRING, 'name' => 'group', 'description' => 'How to group commits', 'description_localizations' => ['pl' => 'Jak grupować commity'], 'required' => false, 'choices' => [
                     ['name' => 'year', 'name_localizations' => ['pl' => 'rok'], 'value' => 'year'],
