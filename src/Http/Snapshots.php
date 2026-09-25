@@ -45,8 +45,6 @@ final class Snapshots
                 return null;
             }
             $data = Json::readFile($this->dir . '/scopes/' . $scope . '.json');
-            // A snapshot written by an older build lacks the keys this one reads, so serving it
-            // would throw instead of answering. Treat it as missing until the collector rebuilds.
             if (is_array($data) && (int) ($data['schema'] ?? 0) !== SnapshotBuilder::SCHEMA) {
                 $data = null;
             }
