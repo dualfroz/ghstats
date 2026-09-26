@@ -15,6 +15,7 @@ use Ghapi\Collect\SnapshotBuilder;
 use Ghapi\Collect\StateStore;
 use Ghapi\Config;
 use Ghapi\Discord\Interactions;
+use Ghapi\Discord\ProfileFeed;
 use Ghapi\GitHub\Source;
 use Ghapi\Http\Compat;
 use Ghapi\Http\Views;
@@ -58,10 +59,10 @@ same('kind asset', 'asset', Classifier::kind('public/logo.webp'));
 same('rename braces', 'src/new/file.ts', Classifier::normalizeNumstatPath('src/{old => new}/file.ts'));
 same('rename plain', 'b.rs', Classifier::normalizeNumstatPath('a.rs => b.rs'));
 
-$log = "\x1eaaa|Me@DualFroz.com|2026-09-01T23:30:00+02:00\n10\t2\tsrc/a.ts\n-\t-\tlogo.png\n5\t0\tsrc/a.test.ts\n"
+$log = "\x1eaaa|Me@Example.com|2026-09-01T23:30:00+02:00\n10\t2\tsrc/a.ts\n-\t-\tlogo.png\n5\t0\tsrc/a.test.ts\n"
     . "\x1ebbb|someone@else.dev|2026-09-02T10:00:00+02:00\n1\t1\tx.go\n"
-    . "\x1eccc|me@dualfroz.com|2026-09-03T08:15:00+00:00\n\n3\t4\tpackage-lock.json\n";
-$parsed = Seeder::parseLog($log, ['me@dualfroz.com'], false);
+    . "\x1eccc|me@example.com|2026-09-03T08:15:00+00:00\n\n3\t4\tpackage-lock.json\n";
+$parsed = Seeder::parseLog($log, ['me@example.com'], false);
 same('seed own only', ['aaa', 'ccc'], array_keys($parsed));
 same('seed added', 15, $parsed['aaa'][Commits::ADDED]);
 same('seed removed', 2, $parsed['aaa'][Commits::REMOVED]);
@@ -76,8 +77,8 @@ same('streak current', 2, $streak['current']);
 same('streak current start', '2026-09-12', $streak['currentStart']);
 same('streak longest', 3, $streak['longest']);
 same('streak broken', 0, SnapshotBuilder::streak(['2026-09-01'], '2026-09-14')['current']);
-same('project key', 'vulcode', SnapshotBuilder::projectKey('VulCodeCom/vulcode-frontend'));
-same('project key plain', 'lunatic-chess', SnapshotBuilder::projectKey('x/lunatic-chess'));
+same('project key', 'shop', SnapshotBuilder::projectKey('example-org/shop-frontend'));
+same('project key plain', 'tiny-chess', SnapshotBuilder::projectKey('x/tiny-chess'));
 same('percentile', 3, SnapshotBuilder::percentile([5, 1, 3, 2, 4], 0.5));
 
 $tmp = sys_get_temp_dir() . '/ghapi-tests-' . bin2hex(random_bytes(4));
@@ -95,6 +96,10 @@ foreach (['React', 'GSAP', 'Vitest', 'Gin', 'GORM', 'Tokio', 'Axum', 'ASP.NET Co
 check('framework skips node_modules', !in_array('Next.js', $names, true));
 
 $aliasConfig = Config::fromArray([]);
+same('no owners by default', [], $aliasConfig->list('owners'));
+same('no author emails by default', [], $aliasConfig->authorEmails());
+$absent = (new ProfileFeed(sys_get_temp_dir() . '/ghapi-missing-' . bin2hex(random_bytes(4)) . '.json', sys_get_temp_dir(), '', 'octocat'))->state();
+same('discord feed missing falls back to login', ['octocat', 'octocat', false], [$absent['displayName'], $absent['username'], $absent['present']]);
 same('alias is case-insensitive', 'TypeScript', $aliasConfig->canonicalLanguage('TSX'));
 same('alias jsx', 'JavaScript', $aliasConfig->canonicalLanguage('JSX'));
 same('denylist', null, $aliasConfig->canonicalLanguage('json'));
@@ -110,7 +115,7 @@ check('discord signature valid', Interactions::verify($publicHex, $signature, $t
 check('discord signature tampered', !Interactions::verify($publicHex, $signature, $timestamp, '{"type":2}'));
 check('discord signature old', !Interactions::verify($publicHex, bin2hex(sodium_crypto_sign_detached('100' . $body, $secret)), '100', $body));
 
-$config = Config::fromArray(['stateDir' => $tmp . '/state', 'snapshotDir' => $tmp . '/snapshot', 'owners' => ['dualfroz'], 'timezone' => 'Europe/Warsaw']);
+$config = Config::fromArray(['stateDir' => $tmp . '/state', 'snapshotDir' => $tmp . '/snapshot', 'owners' => ['octocat'], 'login' => 'octocat', 'authorEmails' => ['me@example.com'], 'timezone' => 'Europe/Warsaw']);
 $store = new StateStore($config->string('stateDir'));
 
 final class FakeSource extends Source
@@ -140,10 +145,10 @@ final class FakeSource extends Source
 }
 
 $remote = [
-    'name' => 'dualfroz/demo', 'owner' => 'dualfroz', 'fork' => false, 'private' => true, 'archived' => false, 'empty' => false,
+    'name' => 'octocat/demo', 'owner' => 'octocat', 'fork' => false, 'private' => true, 'archived' => false, 'empty' => false,
     'stars' => 3, 'forks' => 0, 'defaultBranch' => 'main', 'defaultHead' => 'h2', 'branches' => ['main' => 'h2'],
 ];
-$me = static fn (string $date, int $parents = 1): array => ['email' => 'me@dualfroz.com', 'date' => $date, 'parents' => $parents];
+$me = static fn (string $date, int $parents = 1): array => ['email' => 'me@example.com', 'date' => $date, 'parents' => $parents];
 $source = new FakeSource(['main' => [
     'h2' => $me('2026-09-12T10:00:00+02:00'),
     'm1' => $me('2026-09-11T10:00:00+02:00', 2),
@@ -151,7 +156,7 @@ $source = new FakeSource(['main' => [
     'h1' => $me('2026-09-09T10:00:00+02:00'),
 ]]);
 $collector = new Collector($config, $store, $source, null, new SnapshotBuilder($config, $store));
-$state = $store->loadRepo('dualfroz/demo');
+$state = $store->loadRepo('octocat/demo');
 $state['commits']['gone'] = Commits::make('2026-01-01T00:00:00Z', 1, 1, []);
 $state['commits']['h1'] = Commits::make('2026-09-09T10:00:00+02:00', 7, 3, ['Go|code' => [7, 3]]);
 $result = $collector->syncRepo($remote, $state, false);
@@ -164,8 +169,8 @@ check('new commit pending', Commits::isPending($state['commits']['h2']));
 $remote['defaultHead'] = 'h4';
 $remote['branches'] = ['main' => 'h4', 'feature' => 'f1'];
 $source = new FakeSource([], [
-    'h2...h4' => ['status' => 'ahead', 'behind' => 0, 'total' => 2, 'commits' => ['h3' => ['email' => 'me@dualfroz.com', 'date' => null, 'parents' => 1], 'h4' => ['email' => 'other@x.dev', 'date' => null, 'parents' => 1]]],
-    'h2...f1' => ['status' => 'ahead', 'behind' => 0, 'total' => 1, 'commits' => ['f1' => ['email' => 'me@dualfroz.com', 'date' => null, 'parents' => 1]]],
+    'h2...h4' => ['status' => 'ahead', 'behind' => 0, 'total' => 2, 'commits' => ['h3' => ['email' => 'me@example.com', 'date' => null, 'parents' => 1], 'h4' => ['email' => 'other@x.dev', 'date' => null, 'parents' => 1]]],
+    'h2...f1' => ['status' => 'ahead', 'behind' => 0, 'total' => 1, 'commits' => ['f1' => ['email' => 'me@example.com', 'date' => null, 'parents' => 1]]],
 ], ['h3' => '2026-09-13T09:00:00+02:00', 'f1' => '2026-09-13T11:00:00+02:00']);
 $collector = new Collector($config, $store, $source, null, new SnapshotBuilder($config, $store));
 $result = $collector->syncRepo($remote, $state, false);
