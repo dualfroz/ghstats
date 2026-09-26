@@ -1,5 +1,6 @@
 /data/
 /repos/
+.env
 *.log
 .idea/
 .vscode/

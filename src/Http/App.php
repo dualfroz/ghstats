@@ -171,7 +171,12 @@ final class App
 
     private function discordCard(Request $request): Response
     {
-        $feed = new ProfileFeed($this->config->string('discordProfileFile'), $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache');
+        $feed = new ProfileFeed(
+            $this->config->string('discordProfileFile'),
+            $this->config->string('cacheDir') ?: sys_get_temp_dir() . '/ghapi-cache',
+            $this->config->string('name'),
+            $this->config->string('login'),
+        );
         $state = $feed->state();
         $hideBorder = $request->flag('hide_border');
         $token = hash('sha256', json_encode([$state['status'], $state['displayName'], $state['customStatus'], $state['spotify']['song'] ?? null, $state['playing'] ?? null, $state['stale'], $hideBorder, $state['avatar'] !== null, $request->lang()]) ?: '');

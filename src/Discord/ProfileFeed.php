@@ -16,6 +16,8 @@ final class ProfileFeed
     public function __construct(
         private readonly string $feedFile,
         private readonly string $cacheDir,
+        private readonly string $fallbackName = '',
+        private readonly string $fallbackUsername = '',
     ) {
     }
 
@@ -23,7 +25,7 @@ final class ProfileFeed
     {
         $feed = Json::readFile($this->feedFile);
         if (!is_array($feed) || !isset($feed['username'])) {
-            return self::absent();
+            return self::absent($this->fallbackName ?: $this->fallbackUsername, $this->fallbackUsername);
         }
         $stale = time() - (int) ($feed['updatedAt'] ?? 0) > self::STALE_AFTER;
         $activities = is_array($feed['activities'] ?? null) ? $feed['activities'] : [];
@@ -82,10 +84,10 @@ final class ProfileFeed
         return intdiv(intdiv((int) $id, 4194304) + 1420070400000, 1000);
     }
 
-    public static function absent(): array
+    public static function absent(string $displayName = '', string $username = ''): array
     {
         return [
-            'present' => false, 'stale' => false, 'status' => 'offline', 'displayName' => 'DualFroz', 'username' => 'dualfroz',
+            'present' => false, 'stale' => false, 'status' => 'offline', 'displayName' => $displayName, 'username' => $username,
             'clanTag' => null, 'clanBadge' => null, 'avatar' => null, 'banner' => null, 'accentColor' => null, 'spotify' => null,
             'playing' => null, 'customStatus' => null, 'fetchedAt' => 0,
         ];

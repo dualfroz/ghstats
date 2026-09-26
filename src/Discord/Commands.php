@@ -72,12 +72,12 @@ final class Commands
         ];
     }
 
-    public static function register(string $applicationId, string $botToken): array
+    public static function register(string $applicationId, string $botToken, string $publicBaseUrl): array
     {
         $response = Http::request(
             'PUT',
             'https://discord.com/api/v10/applications/' . rawurlencode($applicationId) . '/commands',
-            ['Authorization' => 'Bot ' . $botToken, 'Content-Type' => 'application/json', 'User-Agent' => 'DiscordBot (https://ghapi.dualfroz.com, 2)'],
+            ['Authorization' => 'Bot ' . $botToken, 'Content-Type' => 'application/json', 'User-Agent' => 'DiscordBot (' . $publicBaseUrl . ', 2)'],
             Json::encode(self::definitions()),
             30,
         );

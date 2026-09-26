@@ -10,7 +10,7 @@ Group=ghapi
 EnvironmentFile=/etc/ghapi/github.env
 Environment=GHAPI_CONFIG=/etc/ghapi/config.json
 Environment=GHAPI_CONFIG_EXTRA=/etc/ghapi/collector.json
-ExecStart=/usr/bin/php /opt/projects/dualfroz/ghstats/bin/ghapi collect
+ExecStart=/usr/bin/php /opt/ghapi/bin/ghapi collect
 TimeoutStartSec=3h
 Nice=10
 IOSchedulingClass=idle

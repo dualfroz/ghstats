@@ -48,6 +48,10 @@ $tokei = $tokei->available() ? $tokei : null;
 try {
     switch ($command) {
         case 'collect':
+            if ($config->list('owners') === [] || $config->string('login') === '' || $config->authorEmails() === []) {
+                fwrite(STDERR, "owners, login and authorEmails must be set in the config\n");
+                exit(2);
+            }
             if ($tokei === null) {
                 Log::warn('tokei not found, live code lines will fall back to GitHub language bytes');
             }
@@ -72,7 +76,7 @@ try {
             exit(in_array($report['status'], ['ok', 'idle'], true) ? 0 : 1);
 
         case 'seed':
-            $root = $positional[0] ?? '/srv/ghstats/repos';
+            $root = $positional[0] ?? '/srv/ghapi/repos';
             $seeder = new Seeder($config, $store, $tokei);
             echo Json::encode($seeder->seedRoot($root, isset($flags['only']) ? (string) $flags['only'] : null), true), "\n";
             exit(0);
@@ -85,18 +89,18 @@ try {
         case 'discord:register':
             $tokenFile = $config->string('discordBotTokenFile');
             $token = is_file($tokenFile) ? trim((string) file_get_contents($tokenFile)) : '';
-            if ($token === '' || $config->string('discordApplicationId') === '') {
-                fwrite(STDERR, "discordApplicationId and a readable discordBotTokenFile are required\n");
+            if ($token === '' || $config->string('discordApplicationId') === '' || $config->string('publicBaseUrl') === '') {
+                fwrite(STDERR, "discordApplicationId, publicBaseUrl and a readable discordBotTokenFile are required\n");
                 exit(2);
             }
-            $result = Commands::register($config->string('discordApplicationId'), $token);
+            $result = Commands::register($config->string('discordApplicationId'), $token, $config->string('publicBaseUrl'));
             echo Json::encode($result, true), "\n";
             exit($result['ok'] ? 0 : 1);
 
         default:
             echo <<<TXT
             ghapi collect [--force] [--full] [--only=owner/repo] [--skip-trees] [--skip-oss]
-            ghapi seed [/srv/ghstats/repos] [--only=owner/repo]
+            ghapi seed [/srv/ghapi/repos] [--only=owner/repo]
             ghapi snapshot
             ghapi key <label>
             ghapi discord:register

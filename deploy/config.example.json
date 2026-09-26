@@ -1,18 +1,29 @@
 {
-    "owners": ["dualfroz", "VulCodeCom", "aphrodipl", "thelunaticstudios", "Sinlege"],
-    "login": "dualfroz",
-    "name": "DualFroz",
-    "timezone": "Europe/Warsaw",
+    "owners": ["octocat", "example-org"],
+    "login": "octocat",
+    "name": "Octocat",
+    "timezone": "UTC",
+    "authorEmails": [
+        "octocat@example.com",
+        "583231+octocat@users.noreply.github.com"
+    ],
+    "fullCountRepos": [],
+    "excludeRepos": [],
     "stateDir": "/srv/ghapi/state",
     "snapshotDir": "/srv/ghapi/snapshot",
     "tmpDir": "/srv/ghapi/tmp",
     "cacheDir": "/srv/ghapi/cache",
     "tokeiBin": "/usr/local/bin/tokei",
-    "publicBaseUrl": "https://ghapi.dualfroz.com",
+    "publicBaseUrl": "https://ghapi.example.com",
     "apiKeys": [
-        { "label": "dualfroz.com", "sha256": "output of: bin/ghapi key dualfroz.com" }
+        { "label": "my-site", "sha256": "output of: bin/ghapi key my-site" }
     ],
-    "discordUserId": "000000000000000000",
+    "discordUserId": "",
     "discordApplicationId": "",
-    "discordPublicKey": ""
+    "discordPublicKey": "",
+    "discordProfileFile": "",
+    "discordBio": "",
+    "discordPronouns": "",
+    "discordBanner": "#5865f2,#404eed",
+    "discordBadges": []
 }

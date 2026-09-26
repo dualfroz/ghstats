@@ -18,7 +18,7 @@ final class Http
             $lines[] = "{$name}: {$value}";
         }
         if (!isset($headers['User-Agent'])) {
-            $lines[] = 'User-Agent: ghapi/2 (+https://ghapi.dualfroz.com)';
+            $lines[] = 'User-Agent: ghapi/2';
         }
         $options = [
             'method' => $method,
@@ -40,7 +40,7 @@ final class Http
 
     public static function download(string $url, array $headers, string $target, int $maxBytes, int $timeout = 600): HttpResponse
     {
-        $lines = ['User-Agent: ghapi/2 (+https://ghapi.dualfroz.com)'];
+        $lines = ['User-Agent: ghapi/2'];
         foreach ($headers as $name => $value) {
             $lines[] = "{$name}: {$value}";
         }
